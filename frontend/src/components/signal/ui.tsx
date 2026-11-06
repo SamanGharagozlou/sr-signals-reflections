@@ -72,6 +72,41 @@ export function DeniedState({ message, action }: { message: string; action?: Rea
   );
 }
 
+/**
+ * Render original ACAPS trigger text without losing its provenance.
+ * Only http(s) markdown links are made clickable; everything else remains escaped React text.
+ * This is presentation logic, not evidence verification or an AI summary.
+ */
+function EvidenceLinks({ text }: { text: string }) {
+  const parts = text.split(/(\[[^\]\n]{1,200}\]\(https?:\/\/[^\s)]+\))/g);
+  return <>{parts.map((part, index) => {
+    const match = /^\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)$/.exec(part);
+    return match ? (
+      <a key={index} href={match[2]} target="_blank" rel="noopener noreferrer"
+        className="font-medium text-teal-deep underline underline-offset-2 hover:text-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+        {match[1]} <span className="sr-only">(opens in new tab)</span>
+      </a>
+    ) : <span key={index}>{part}</span>;
+  })}</>;
+}
+
+export function RiskEvidence({ text }: { text: string }) {
+  const sections = text
+    .split(/(?=\b(?:Trigger ID|Title|Description|Sources):)/)
+    .flatMap((part) => part.split(/\n+/))
+    .map((part) => part.trim()).filter(Boolean);
+  return (
+    <div className="space-y-3 break-words text-sm leading-relaxed">
+      {sections.map((section, index) => {
+        const match = /^(Trigger ID|Title|Description|Sources):\s*([\s\S]*)$/.exec(section);
+        return <p key={index}>
+          {match ? <><strong className="font-semibold text-heading">{match[1]}: </strong><EvidenceLinks text={match[2]} /></> : <EvidenceLinks text={section} />}
+        </p>;
+      })}
+    </div>
+  );
+}
+
 export function RiskSummary({ risk, compact }: { risk: Risk; compact?: boolean }) {
   const facts = [
     ["Risk level", risk.acapsRiskLevel],
@@ -84,7 +119,17 @@ export function RiskSummary({ risk, compact }: { risk: Risk; compact?: boolean }
     <section className="rounded-lg border bg-card p-5">
       <p className="text-xs font-semibold uppercase tracking-wider text-teal">ACAPS risk {risk.id} · qualitative rating</p>
       <h2 className="mt-1 text-lg font-semibold">{risk.title}</h2>
-      {!compact && <p className="mt-2 leading-relaxed">{risk.synopsis}</p>}
+      {!compact && risk.synopsis && (
+        <details className="group mt-3 rounded-md border bg-background px-4 py-3">
+          <summary className="cursor-pointer font-medium text-heading hover:text-teal-deep focus-visible:outline-2 focus-visible:outline-ring">
+            Review triggers and supporting source text
+          </summary>
+          <div className="mt-4 border-t pt-3">
+            <RiskEvidence text={risk.synopsis} />
+            <p className="mt-3 text-xs text-muted-foreground">Original supplied risk text. External citations are not independently verified by SIGNAL.</p>
+          </div>
+        </details>
+      )}
       <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
         {facts.map(([k, v]) => (
           <div key={k} className="rounded-md bg-muted px-3 py-2">

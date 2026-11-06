@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as ExpertRouteImport } from './routes/expert'
 import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as MethodRouteImport } from './routes/method'
 import { Route as ModeratorRouteImport } from './routes/moderator'
 import { Route as PublicRouteImport } from './routes/public'
 import { Route as RiskIndexRouteImport } from './routes/risk-index'
@@ -37,6 +38,11 @@ const ExploreRoute = ExploreRouteImport.update({
   path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MethodRoute = MethodRouteImport.update({
+  id: '/method',
+  path: '/method',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ModeratorRoute = ModeratorRouteImport.update({
   id: '/moderator',
   path: '/moderator',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/analysis': typeof AnalysisRoute
   '/expert': typeof ExpertRoute
   '/explore': typeof ExploreRoute
+  '/method': typeof MethodRoute
   '/moderator': typeof ModeratorRoute
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/analysis': typeof AnalysisRoute
   '/expert': typeof ExpertRoute
   '/explore': typeof ExploreRoute
+  '/method': typeof MethodRoute
   '/moderator': typeof ModeratorRoute
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/analysis': typeof AnalysisRoute
   '/expert': typeof ExpertRoute
   '/explore': typeof ExploreRoute
+  '/method': typeof MethodRoute
   '/moderator': typeof ModeratorRoute
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/analysis'
     | '/expert'
     | '/explore'
+    | '/method'
     | '/moderator'
     | '/public'
     | '/risk-index'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/analysis'
     | '/expert'
     | '/explore'
+    | '/method'
     | '/moderator'
     | '/public'
     | '/risk-index'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/analysis'
     | '/expert'
     | '/explore'
+    | '/method'
     | '/moderator'
     | '/public'
     | '/risk-index'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   AnalysisRoute: typeof AnalysisRoute
   ExpertRoute: typeof ExpertRoute
   ExploreRoute: typeof ExploreRoute
+  MethodRoute: typeof MethodRoute
   ModeratorRoute: typeof ModeratorRoute
   PublicRoute: typeof PublicRoute
   RiskIndexRoute: typeof RiskIndexRoute
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/method': {
+      id: '/method'
+      path: '/method'
+      fullPath: '/method'
+      preLoaderRoute: typeof MethodRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/moderator': {
       id: '/moderator'
       path: '/moderator'
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalysisRoute: AnalysisRoute,
   ExpertRoute: ExpertRoute,
   ExploreRoute: ExploreRoute,
+  MethodRoute: MethodRoute,
   ModeratorRoute: ModeratorRoute,
   PublicRoute: PublicRoute,
   RiskIndexRoute: RiskIndexRoute,

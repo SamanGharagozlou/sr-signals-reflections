@@ -19,6 +19,11 @@ describe("App routing", () => {
     expect(router.matchRoutes("/analysis").at(-1)?.routeId).toBe("/analysis");
   });
 
+  it("matches the Agent Crew methodology route", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+    expect(router.matchRoutes("/method").at(-1)?.routeId).toBe("/method");
+  });
+
   it("matches a page for / instead of falling back to not found", () => {
     const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
 

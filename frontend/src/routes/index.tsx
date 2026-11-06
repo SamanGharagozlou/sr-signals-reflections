@@ -38,7 +38,10 @@ function Index() {
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">
             Independent expert calls. Transparent disagreement. Human-approved humanitarian risk insight.
           </p>
-          <Link to="/explore" className="gt-explore-hero-cta">Explore the Risk Radar <ArrowRight size={18} aria-hidden/></Link>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link to="/explore" className="gt-explore-hero-cta">Explore the Risk Radar <ArrowRight size={18} aria-hidden/></Link>
+            <Link to="/method" className="gt-crew-home-link">Meet Rita's Agent Crew <ArrowRight size={16} aria-hidden /></Link>
+          </div>
           <div className="gt-home-stages" aria-label="How SIGNAL works">
             <span><strong>01</strong> Brief</span>
             <span><strong>02</strong> Forecast</span>

@@ -24,6 +24,7 @@ export function AppHeader({ section }: { section?: string }) {
             <Link to="/explore">Explore</Link>
             <Link to="/risk-index">Risk Index</Link>
             <Link to="/analysis">Analysis</Link>
+            <Link to="/method">How it works</Link>
           </nav>
           <span className="hidden text-[10px] font-semibold tracking-[0.18em] text-white/55 uppercase md:inline">Expert insight · human decision</span>
           {section && <span className="gt-role-chip">{section}</span>}

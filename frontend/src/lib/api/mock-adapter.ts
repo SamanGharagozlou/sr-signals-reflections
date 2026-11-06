@@ -79,8 +79,8 @@ function panel() {
 }
 
 const band = (v: number) => {
-  const lo = Math.floor(v / 10) * 10;
-  return `${lo}–${Math.min(lo + 10, 100)}%`;
+  const lo = Math.min(Math.floor(v / 20) * 20, 80);
+  return `${lo}–${lo === 80 ? 100 : lo + 19}%`;
 };
 function agreementText(a: Record<RiskAssessment, number>) {
   const entries = Object.entries(a) as [RiskAssessment, number][];
@@ -138,12 +138,12 @@ export const mockAdapter: SignalApi = {
       released: true,
       centralBand: `${band(s.q1).split("–")[0]}–${band(s.q3).split("–")[1]}`,
       agreementSummary: agreementText(panel().agreement),
-      canRevise: state.you.revisedProbability == null,
+      canRevise: !state.snapshot && state.you.revisedProbability == null,
     });
   },
   async reviseExpert(p) {
     requireRole("expert");
-    if (!state.you || !state.feedbackReleased) throw new ApiError(409, "Revision is not open.");
+    if (!state.you || !state.feedbackReleased || state.snapshot) throw new ApiError(409, "Revision is not open or the panel has been frozen.");
     if (state.you.revisedProbability != null) throw new ApiError(409, "You have already used your one revision.");
     state.you.revisedProbability = p;
     emit();
@@ -223,9 +223,10 @@ export const mockAdapter: SignalApi = {
   },
   async publishSnapshot() {
     requireRole("moderator");
-    if (submittedCount() < PANEL_SIZE) throw new ApiError(409, "Wait for the full panel before approving a public snapshot.");
+    if (state.snapshot) throw new ApiError(409, "The published snapshot is frozen.");
+    if (!state.feedbackReleased || submittedCount() < PANEL_SIZE) throw new ApiError(409, "Release feedback for the full panel before publishing.");
     const p = panel();
-    const s = describePanel(state.feedbackReleased ? p.second : p.first)!;
+    const s = describePanel(p.revisers > 0 ? p.second : p.first)!;
     state.snapshot = {
       approved: true,
       approvedAt: new Date().toISOString(),
@@ -234,6 +235,7 @@ export const mockAdapter: SignalApi = {
       acapsRiskLevel: RISK_R1043.acapsRiskLevel,
       panelN: s.n,
       medianBand: band(s.median),
+      forecastRound: p.revisers > 0 ? "revised_panel" : "initial_panel",
       spreadDescription: s.iqr <= 20 ? "Views were fairly close together." : "Views varied considerably across the panel.",
       agreementSummary: agreementText(p.agreement),
       questionText: QUESTION.text,

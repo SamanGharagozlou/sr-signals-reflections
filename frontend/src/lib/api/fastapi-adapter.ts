@@ -217,7 +217,7 @@ export const fastapiAdapter: SignalApi = {
   async releaseFeedback() { await request("/moderator/release", {method:"POST"}, true); },
   async publishSnapshot() { await request("/moderator/publish", {method:"POST"}, true); },
   async getPublicSummary() {
-    const p=await request<{available:boolean;risk_id?:string;panel_size?:number;forecast_median_band?:string;approved_at?:string;notice?:string}>("/public-summary");
+    const p=await request<{available:boolean;risk_id?:string;panel_size?:number;forecast_median_band?:string;forecast_round?:"initial_panel"|"revised_panel";approved_at?:string;notice?:string}>("/public-summary");
     if (!p.available) return { approved:false };
     const consultation = await this.getConsultation();
     return {
@@ -228,6 +228,7 @@ export const fastapiAdapter: SignalApi = {
       acapsRiskLevel:consultation.risk.acapsRiskLevel,
       panelN:p.panel_size,
       medianBand:p.forecast_median_band,
+      forecastRound:p.forecast_round,
       // No subgroup statistics or disagreement details are present in the frozen public snapshot.
       spreadDescription:p.notice,
       agreementSummary:"",

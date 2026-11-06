@@ -352,14 +352,28 @@ def peer_view(group: dict) -> dict:
 
 
 def safe_public_snapshot(group: dict) -> dict:
-    """Create a stable, minimal, moderator-approved output once."""
+    """Freeze the moderator-selected full-panel view, never a subset of revisers.
+
+    In this fixed synthetic Delphi consultation, if any expert has revised we use
+    the complete current panel: revised probabilities replace those experts'
+    first submissions, and all other original probabilities carry forward.
+    Otherwise we publish the initial full panel. Public metadata identifies the
+    view but intentionally omits the count/identity of revisers.
+    """
+    revised = group["round_two_median"] is not None
+    current_median = group["round_two_median"] if revised else group["median"]
     return {
         "available": True,
         "risk_id": "R1043",
         "panel_size": group["count"],
-        "forecast_median_band": forecast_band(group["median"]),
+        "forecast_round": "revised_panel" if revised else "initial_panel",
+        "forecast_median_band": forecast_band(current_median),
         "approved_at": now(),
-        "notice": "Synthetic demonstration; not an official ACAPS assessment. Rounded aggregate, not a validated event prediction.",
+        "notice": (
+            "Synthetic, moderator-approved Delphi panel view; unaltered forecasts "
+            "carry forward when others revise. Rounded aggregate, not a calibrated "
+            "prediction or official ACAPS assessment."
+        ),
     }
 
 
@@ -518,6 +532,8 @@ def feedback(auth=Depends(require_expert)):
 @app.post("/api/expert/revise")
 def revise(body: Revision, auth=Depends(require_expert)):
     with db() as conn:
+        if config(conn, "public_approved") == "true":
+            raise HTTPException(409, "Forecast already approved and frozen; reset demo to start another consultation")
         if config(conn,"feedback_released") != "true" or not compute_group(conn)["ready"]:
             raise HTTPException(409, "Group feedback not yet available")
         if not conn.execute("SELECT 1 FROM submissions WHERE expert_id=?",(auth["expert_id"],)).fetchone():

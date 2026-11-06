@@ -228,6 +228,7 @@ export interface PublicSummary {
   acapsRiskLevel?: string;
   panelN?: number;
   medianBand?: string;
+  forecastRound?: "initial_panel" | "revised_panel";
   spreadDescription?: string;
   agreementSummary?: string;
   questionText?: string;

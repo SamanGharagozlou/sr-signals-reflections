@@ -20,6 +20,8 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
+from risk_context import build_risk_context
+
 ROOT = Path(__file__).resolve().parent
 DB_PATH = Path(os.environ.get("SIGNAL_DB_PATH", ROOT / "signal_demo.db"))
 RISK_CSV = Path(os.environ.get("SIGNAL_RISK_CSV", ROOT / "data" / "risk-radar-export.csv"))
@@ -363,6 +365,16 @@ def selected_risk(risk_id: str):
     if r is None:
         raise HTTPException(404, "Risk not in available dataset")
     return risk_card(r)
+
+
+@app.get("/api/risks/{risk_id}/context")
+def moderator_risk_context(risk_id: str, auth=Depends(require_moderator)):
+    """Moderator-only working Risk Radar context (not public expert feedback)."""
+    records, origin = get_risks()
+    record = next((r for r in records if r.get("Risk ID") == risk_id), None)
+    if record is None:
+        raise HTTPException(404, "Risk not in available dataset")
+    return build_risk_context(record, origin)
 
 
 @app.get("/api/consultation")

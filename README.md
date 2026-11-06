@@ -131,3 +131,25 @@ The simplest hackathon path is to use **the provided working frontend for the in
 - Dataset dictionary: https://github.com/Hackathon-for-Good-The-Hague/HFG8-ACAPS-Ground-Truth/blob/main/docs/data-dictionary.md
 
 All application code in this folder is standalone, written for this example; **no existing private product code was reused**.
+
+## Phase 3D: methodology-aware moderator risk context
+
+The moderator-only `GET /api/risks/{risk_id}/context` endpoint returns the
+original Risk Radar fields in a structured briefing: original probability and
+impact categories, hazard triggers, source links already present in the export,
+expected exposure and priority needs, and **explicitly marked missing fields**.
+The extraction is deterministic. It never downloads URLs or invents claims.
+
+`acaps_methodology.py` implements the probability-category boundaries from
+**ACAPS' May 2019 methodology (p. 11)** solely as historical interpretive
+context: 0-9 Very low, 10-33 Low, 34-66 Moderate, 67-90 High, 91-100 Very high.
+It does not recompute ACAPS' overall risk level or turn qualitative Risk Radar
+ratings into expert forecasts. Confirm any current methodology changes with ACAPS.
+
+`risk_context.py` parses `Trigger ID` / `Title` / `Description` sections from
+organizer data, retains supported source URLs and marks missing material. Use
+**the cleaned organizer CSV** for correct encoding rather than the raw XLSX.
+The new endpoint uses the current **demo moderator token** and must **not** be
+exposed to a public website with these synthetic login credentials.
+
+Tests: `python -m unittest discover -s tests -v`.

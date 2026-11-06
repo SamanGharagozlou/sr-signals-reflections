@@ -13,6 +13,12 @@ describe("App routing", () => {
     expect(matches.at(-1)?.routeId).toBe("/explore");
   });
 
+  it("matches the new Risk Index and Statistical Studio routes", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+    expect(router.matchRoutes("/risk-index").at(-1)?.routeId).toBe("/risk-index");
+    expect(router.matchRoutes("/analysis").at(-1)?.routeId).toBe("/analysis");
+  });
+
   it("matches a page for / instead of falling back to not found", () => {
     const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
 

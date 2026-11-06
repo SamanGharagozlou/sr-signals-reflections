@@ -87,6 +87,57 @@ export interface ModeratorDashboard {
   evidenceGaps: EvidenceGap[];
 }
 
+/** Descriptive ACAPS historical outcomes. No inferred numerical forecast calibration. */
+export interface HistoricalRiskLevel {
+  level: string;
+  total: number;
+  resolved: number;
+  materialised: number;
+  not_materialised: number;
+  active: number;
+  unknown_status: number;
+  observed_materialisation_pct: number | null;
+  small_sample: boolean;
+  rate_displayable: boolean;
+}
+export interface HistoricalEvaluation {
+  available: boolean;
+  source: string;
+  reason?: string;
+  population?: string;
+  totals?: {
+    total: number;
+    resolved: number;
+    materialised: number;
+    not_materialised: number;
+    active: number;
+    unknown_status: number;
+  };
+  by_risk_level?: HistoricalRiskLevel[];
+  risk_matrix_version?: string;
+  limitations?: string[];
+  brier_evaluation?: string;
+}
+
+export interface ModeratorFollowup {
+  id: string;
+  topic: string;
+  question: string;
+  approved_at: string;
+  status: string;
+}
+
+export interface ModeratorSynthesis {
+  available: boolean;
+  reason?: string;
+  panel_size?: number;
+  disagreement_summary?: string;
+  evidence_status?: string;
+  proposed?: { id: string; topic: string; question: string };
+  review_notice?: string;
+  approved?: ModeratorFollowup | null;
+}
+
 export interface PublicSummary {
   approved: boolean;
   approvedAt?: string;
@@ -109,6 +160,9 @@ export interface SignalApi {
   getExpertFeedback(): Promise<ExpertFeedback>;
   reviseExpert(probability: number): Promise<ExpertReceipt>;
   getModeratorDashboard(): Promise<ModeratorDashboard>;
+  getHistoricalEvaluation(): Promise<HistoricalEvaluation>;
+  getModeratorSynthesis(): Promise<ModeratorSynthesis>;
+  approveModeratorFollowup(questionId: string): Promise<void>;
   simulateFifthContribution(): Promise<void>;
   releaseFeedback(): Promise<void>;
   publishSnapshot(): Promise<void>;

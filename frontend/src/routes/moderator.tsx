@@ -47,6 +47,8 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
     <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
       <div className="space-y-6 min-w-0">
         <RiskSummary risk={c.risk} />
+        <HistoricalOutcomes />
+        <ModeratorEvidenceSynthesis />
 
         <section className="rounded-lg border bg-card p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -135,6 +137,119 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
         </StatePanel>
       </aside>
     </div>
+  );
+}
+
+
+/** Deterministic moderator-only verification suggestion, never automatically sent. */
+function ModeratorEvidenceSynthesis() {
+  const q = useApi(() => api.getModeratorSynthesis());
+  const proposalId = q.status === "ok" ? q.data.proposed?.id : undefined;
+  return (
+    <section className="rounded-lg border bg-card p-5" aria-label="Moderator evidence synthesis">
+      <p className="text-xs font-semibold uppercase tracking-wider text-teal">Expert-to-analyst feedback loop</p>
+      <h2 className="mt-1 text-lg font-semibold">Review a targeted follow-up</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        SIGNAL checks recurring keyword themes and suggests one question for human verification.
+        No expert quotations, source verification claims, or automatic outreach.
+      </p>
+      {q.status === "loading" && <p className="mt-4 text-sm text-muted-foreground">Preparing synthesis…</p>}
+      {q.status === "error" && <p role="alert" className="mt-4 text-sm text-destructive">{q.error.message}</p>}
+      {q.status === "ok" && !q.data.available && <p className="mt-4 rounded-md bg-muted p-3 text-sm">{q.data.reason}</p>}
+      {q.status === "ok" && q.data.available && q.data.proposed && (
+        <div className="mt-4 space-y-3">
+          <p className="text-sm text-heading">{q.data.disagreement_summary}</p>
+          <p className="text-sm text-muted-foreground">{q.data.evidence_status}</p>
+          <div className="rounded-md border bg-background p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-teal-deep">Suggested · {q.data.proposed.topic}</p>
+            <p className="mt-2 text-sm font-medium text-heading">{q.data.proposed.question}</p>
+          </div>
+          {q.data.approved ? (
+            <div className="rounded-md border border-green/30 bg-green/5 p-3 text-sm" role="status">
+              Approved draft at {new Date(q.data.approved.approved_at).toLocaleString()}; not dispatched to any expert.
+            </div>
+          ) : (
+            <ConfirmAction
+              label="Approve draft for manual follow-up"
+              title="Approve this verification question?"
+              description="The chosen question is stored for a moderator to use manually. SIGNAL will not contact experts or publish this draft."
+              confirmLabel="Approve draft"
+              onConfirm={() => run(
+                () => api.approveModeratorFollowup(proposalId ?? ""),
+                "Follow-up draft approved; no message sent",
+                q.refresh,
+              )}
+            />
+          )}
+          <p className="text-xs text-muted-foreground">{q.data.review_notice}</p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** Historical selected-risk frequencies, NOT forecast calibration. Moderator only. */
+function HistoricalOutcomes() {
+  const h = useApi(() => api.getHistoricalEvaluation());
+  return (
+    <section className="rounded-lg border bg-card p-5" aria-label="Historical ACAPS risk outcomes">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-teal">Methodology transparency</p>
+          <h2 className="mt-1 text-lg font-semibold">Historical ACAPS risk outcomes</h2>
+        </div>
+        <span className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">Descriptive · not calibration</span>
+      </div>
+      {h.status === "loading" && <p className="mt-3 text-sm text-muted-foreground">Loading historical outcomes…</p>}
+      {h.status === "error" && <p role="alert" className="mt-3 text-sm text-destructive">Historical analysis unavailable: {h.error.message}</p>}
+      {h.status === "ok" && !h.data.available && (
+        <p className="mt-3 text-sm text-muted-foreground">{h.data.reason || "The official CSV is not available."}</p>
+      )}
+      {h.status === "ok" && h.data.available && h.data.totals && (
+        <>
+          <p className="mt-3 text-sm text-muted-foreground">{h.data.totals.total} selected risk records · {h.data.totals.resolved} resolved · {h.data.totals.active} active · {h.data.totals.unknown_status} missing or unrecognized outcome.</p>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-sm">
+              <caption className="sr-only">Resolved historical ACAPS risk records by overall risk level. Small samples are suppressed.</caption>
+              <thead><tr className="border-b text-left text-muted-foreground">
+                <th scope="col" className="py-2 pr-3 font-medium">Risk level</th>
+                <th scope="col" className="py-2 pr-3 font-medium">Resolved</th>
+                <th scope="col" className="py-2 pr-3 font-medium">Materialised</th>
+                <th scope="col" className="py-2 font-medium">Observed rate</th>
+              </tr></thead>
+              <tbody>
+                {(h.data.by_risk_level ?? []).map((r) => (
+                  <tr key={r.level} className="border-b last:border-0">
+                    <th scope="row" className="py-3 pr-3 text-left font-medium text-heading">{r.level}</th>
+                    <td className="py-3 pr-3">{r.resolved}</td>
+                    <td className="py-3 pr-3">{r.materialised}</td>
+                    <td className="min-w-[155px] py-3">
+                      {r.rate_displayable && r.observed_materialisation_pct !== null ? (
+                        <div className="flex items-center gap-2">
+                          <div className="h-2.5 min-w-14 flex-1 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+                            <div className="h-full rounded-full bg-teal" style={{ width: `${r.observed_materialisation_pct}%` }} />
+                          </div>
+                          <span className="w-14 text-right tabular-nums">{r.observed_materialisation_pct}%</span>
+                        </div>
+                      ) : <span className="text-muted-foreground">{r.resolved === 0 ? "No resolved records" : "Small sample (n < 10)"}</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">Source: {h.data.source}. Resolved records are used as denominators; active and unknown outcomes are excluded. Risk levels incorporate impact, not just probability.</p>
+          <details className="mt-3 rounded-md border px-3 py-2 text-sm">
+            <summary className="cursor-pointer font-medium text-heading">Methodology and limitations</summary>
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-muted-foreground">
+              {(h.data.limitations ?? []).map((caveat) => <li key={caveat}>{caveat}</li>)}
+            </ul>
+            <p className="mt-3 text-xs text-muted-foreground">{h.data.brier_evaluation}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Documented matrix: {h.data.risk_matrix_version}</p>
+          </details>
+        </>
+      )}
+    </section>
   );
 }
 

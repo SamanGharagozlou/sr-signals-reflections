@@ -162,6 +162,10 @@ export const mockAdapter: SignalApi = {
       evidenceGaps: EVIDENCE_GAPS,
     });
   },
+  async getHistoricalEvaluation() {
+    requireRole("moderator");
+    return delay({ available: false, source: "Browser-only mock", reason: "Historical evaluation is only available from FastAPI with the official CSV." });
+  },
   async simulateFifthContribution() {
     requireRole("moderator");
     if (submittedCount() >= PANEL_SIZE) throw new ApiError(409, "Panel already complete.");

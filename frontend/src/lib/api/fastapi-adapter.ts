@@ -4,7 +4,7 @@
  * No client-side statistics, source synthesis, or unsupported access to raw submissions.
  * Demo-only shared invitation codes: NEVER use for real humanitarian contributors.
  */
-import { ApiError, type SignalApi, type DemoRole, type Consultation, type ExpertReceipt, type ModeratorDashboard, type PanelStats, type HistoricalEvaluation, type ModeratorSynthesis } from "./types";
+import { ApiError, type SignalApi, type DemoRole, type Consultation, type ExpertReceipt, type ModeratorDashboard, type PanelStats, type HistoricalEvaluation, type ModeratorSynthesis, type ModeratorCounterpoint, type DelphiCounterpoint } from "./types";
 
 const PATH = "/api";
 const TOKEN_KEY = "signal-demo-token";
@@ -149,7 +149,7 @@ export const fastapiAdapter: SignalApi = {
   },
   async getExpertReceipt() { return receipt(await getRawMe()); },
   async getExpertFeedback() {
-    const f = await request<{available:boolean;reason?:string;group?:{forecast_median_band:string;assessment_pattern:string}}>("/expert/feedback", {}, true);
+    const f = await request<{available:boolean;reason?:string;group?:{forecast_median_band:string;assessment_pattern:string};counterpoint?:DelphiCounterpoint|null}>("/expert/feedback", {}, true);
     if (!f.available || !f.group) return { released: false };
     const me = await getRawMe();
     return {
@@ -157,6 +157,7 @@ export const fastapiAdapter: SignalApi = {
       centralBand: f.group.forecast_median_band,
       agreementSummary: f.group.assessment_pattern,
       canRevise: me.revision == null,
+      counterpoint: f.counterpoint ?? null,
     };
   },
   async reviseExpert(probability) {
@@ -193,6 +194,14 @@ export const fastapiAdapter: SignalApi = {
   async approveModeratorFollowup(questionId) {
     await request("/moderator/follow-up/approve", {
       method: "POST", body: JSON.stringify({ question_id: questionId }),
+    }, true);
+  },
+  async getModeratorCounterpoint() {
+    return request<ModeratorCounterpoint>("/moderator/counterpoint", {}, true);
+  },
+  async approveModeratorCounterpoint(promptId) {
+    await request("/moderator/counterpoint/approve", {
+      method: "POST", body: JSON.stringify({ prompt_id: promptId }),
     }, true);
   },
   async simulateFifthContribution() {

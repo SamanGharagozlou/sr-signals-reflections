@@ -80,6 +80,25 @@ TAG_WORDS = {
     "Health": ("health", "hospital", "clinic", "medical"),
 }
 
+# Editorial challenge prompts, not evidence, predictions, or statements from panel members.
+# Moderator selects exactly one fixed option AFTER first-round feedback is released.
+COUNTERPOINTS = (
+    {
+        "id": "attribution",
+        "title": "Test the attribution",
+        "text": "Could additional displacement be explained by factors other than a new cross-border attack? What independently dated evidence would establish the cause?",
+    },
+    {
+        "id": "documentation",
+        "title": "Test what would count as evidence",
+        "text": "Could gaps in reporting make a genuine displacement episode difficult to confirm? What accessible, independent sources would support or challenge the forecast?",
+    },
+)
+COUNTERPOINT_NOTICE = (
+    "Moderator-approved reflection prompt, not a claim from another expert, "
+    "a verified field report, or an ACAPS conclusion. You can keep your original forecast."
+)
+
 SESSION_TTL = timedelta(hours=8)  # Hackathon session expiry; NOT production authentication.
 
 app = FastAPI(title="SIGNAL — ACAPS Ground Truth Demo", version="0.3.0", description="Synthetic-data-only hackathon prototype")
@@ -144,6 +163,7 @@ def initialize():
         conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('public_approved','false')")
         conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('public_snapshot','')")
         conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('moderator_followup','')")
+        conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('delphi_counterpoint','')")
         # Fail closed for local databases created before snapshot support existed.
         if not config(conn, "public_snapshot"):
             set_config(conn, "public_approved", "false")
@@ -205,6 +225,10 @@ class Revision(BaseModel):
 
 class FollowupApproval(BaseModel):
     question_id: str = Field(min_length=1, max_length=40)
+
+
+class CounterpointApproval(BaseModel):
+    prompt_id: Literal["attribution", "documentation"]
 
 
 class ScoreRequest(BaseModel):
@@ -463,7 +487,14 @@ def feedback(auth=Depends(require_expert)):
         group = compute_group(conn)
         if not group["ready"]:
             return {"available": False, "reason": "Insufficient panel size"}
-        return {"available": True, "group": peer_view(group)}
+        chosen = config(conn, "delphi_counterpoint")
+        prompt = next((p for p in COUNTERPOINTS if p["id"] == chosen), None)
+        # The public summary and unsubmitted experts never receive this prompt.
+        return {
+            "available": True,
+            "group": peer_view(group),
+            "counterpoint": {**prompt, "notice": COUNTERPOINT_NOTICE} if prompt else None,
+        }
 
 
 @app.post("/api/expert/revise")
@@ -528,6 +559,36 @@ def approve_followup(body: FollowupApproval, auth=Depends(require_moderator)):
         return {"approved": True, "followup": approved, "sent": False}
 
 
+@app.get("/api/moderator/counterpoint")
+def moderator_counterpoint(auth=Depends(require_moderator)):
+    """Return curated reflection prompts; no raw expert remarks are exposed."""
+    with db() as conn:
+        ready = compute_group(conn)["ready"] and config(conn, "feedback_released") == "true"
+        chosen = config(conn, "delphi_counterpoint")
+        return {
+            "available": ready,
+            "reason": None if ready else "Complete the panel and release feedback before approving a reflection prompt.",
+            "options": list(COUNTERPOINTS),
+            "approved_id": chosen or None,
+            "notice": COUNTERPOINT_NOTICE,
+        }
+
+
+@app.post("/api/moderator/counterpoint/approve")
+def approve_counterpoint(body: CounterpointApproval, auth=Depends(require_moderator)):
+    """Publish one vetted editorial prompt to submitted experts, never to the public."""
+    with db() as conn:
+        if not compute_group(conn)["ready"] or config(conn, "feedback_released") != "true":
+            raise HTTPException(409, "Complete the panel and release feedback first")
+        if config(conn, "delphi_counterpoint"):
+            raise HTTPException(409, "Reflection prompt already approved; reset demo to change it")
+        selected = next((p for p in COUNTERPOINTS if p["id"] == body.prompt_id), None)
+        if not selected:
+            raise HTTPException(400, "Unrecognized reflection prompt")
+        set_config(conn, "delphi_counterpoint", selected["id"])
+        return {"approved": True, "prompt_id": selected["id"], "sent": False}
+
+
 @app.post("/api/moderator/release")
 def release(auth=Depends(require_moderator)):
     with db() as conn:
@@ -569,6 +630,7 @@ def reset(auth=Depends(require_moderator)):
         set_config(conn,"public_approved","false")
         set_config(conn,"public_snapshot","")
         set_config(conn,"moderator_followup","")
+        set_config(conn,"delphi_counterpoint","")
         for e in SYNTHETIC_RESPONSES:
             conn.execute("INSERT INTO submissions(expert_id,agreement,probability,confidence,note,anonymity,created_at) VALUES(?,?,?,?,?,?,?)",(*e,now()))
     return {"reset":True,"message":"Synthetic demo restored to 4 of 5 responses. Login again."}

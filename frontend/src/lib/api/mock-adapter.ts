@@ -166,6 +166,22 @@ export const mockAdapter: SignalApi = {
     requireRole("moderator");
     return delay({ available: false, source: "Browser-only mock", reason: "Historical evaluation is only available from FastAPI with the official CSV." });
   },
+  async getModeratorSynthesis() {
+    requireRole("moderator");
+    return delay({ available: false, reason: "This mock does not implement the moderator synthesis workflow." });
+  },
+  async approveModeratorFollowup() {
+    requireRole("moderator");
+    throw new ApiError(409, "Moderator follow-up approval requires FastAPI.");
+  },
+  async getModeratorCounterpoint() {
+    requireRole("moderator");
+    return delay({ available: false, options: [], approved_id: null, notice: "Requires FastAPI.", reason: "Reflection prompts require FastAPI." });
+  },
+  async approveModeratorCounterpoint() {
+    requireRole("moderator");
+    throw new ApiError(409, "Reflection prompt approval requires FastAPI.");
+  },
   async simulateFifthContribution() {
     requireRole("moderator");
     if (submittedCount() >= PANEL_SIZE) throw new ApiError(409, "Panel already complete.");

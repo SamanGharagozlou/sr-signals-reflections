@@ -153,3 +153,27 @@ The new endpoint uses the current **demo moderator token** and must **not** be
 exposed to a public website with these synthetic login credentials.
 
 Tests: `python -m unittest discover -s tests -v`.
+
+
+## Phase 4A — historical outcomes (moderator-only)
+
+The integrated frontend now shows a historical ACAPS outcomes panel after a moderator
+logs in. `GET /api/moderator/historical-evaluation` reads the organizer's **cleaned**
+`data/risk-radar-export.csv` using the existing loader, groups selected records
+by the original *overall risk level*, and counts materialised / not materialised /
+active / unknown outcomes. The UI suppresses percentage bars for groups with
+fewer than 10 resolved records. If the CSV is absent, the endpoint returns
+`available: false` rather than fabricated statistics.
+
+This is **not a reliability chart, Brier-calibrated forecast, or proof of prediction
+skill**. The original qualitative risk level combines probability *and* impact;
+older risks may have different monitoring horizons. The selected Risk Radar
+records also omit potential risks never entered in the radar.
+
+`historical_evaluation.py` contains a versioned, descriptive risk-matrix lookup
+(from the official 2026 challenge repository's `docs/risk-methodology.md`) and
+a Brier score helper that only accepts explicit numerical probability / resolved
+binary-outcome pairs. Neither helper overwrites an original ACAPS risk rating,
+and the Risk Radar export is never converted to made-up percentage forecasts.
+
+Run `python -m unittest discover -s tests -q` before merging.

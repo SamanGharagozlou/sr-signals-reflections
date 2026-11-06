@@ -21,6 +21,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from risk_context import build_risk_context
+from historical_evaluation import summarize_historical_outcomes
 
 ROOT = Path(__file__).resolve().parent
 DB_PATH = Path(os.environ.get("SIGNAL_DB_PATH", ROOT / "signal_demo.db"))
@@ -375,6 +376,19 @@ def moderator_risk_context(risk_id: str, auth=Depends(require_moderator)):
     if record is None:
         raise HTTPException(404, "Risk not in available dataset")
     return build_risk_context(record, origin)
+
+
+@app.get("/api/moderator/historical-evaluation")
+def historical_evaluation(auth=Depends(require_moderator)):
+    """Descriptive ACAPS historical outcomes; never infer numeric forecast calibration."""
+    records, origin = get_risks()
+    if not RISK_CSV.exists() or len(records) < 2 or origin.startswith("built-in"):
+        return {
+            "available": False,
+            "reason": "Official historical Risk Radar CSV not loaded. Add data/risk-radar-export.csv to analyze real past outcomes.",
+            "source": origin,
+        }
+    return summarize_historical_outcomes(records, origin)
 
 
 @app.get("/api/consultation")

@@ -130,7 +130,7 @@ function groupPanel(g) {
    <div class="divider"></div><div class="card-eyebrow">RISK ASSESSMENT AGREEMENT</div><div class="bars">${Object.entries(g.agreement).map(([k,n])=>`<div><div class="bar-head"><span>${agreementLabels[k]}</span><span>${n} / ${g.count}</span></div><div class="bar-bg"><div class="bar-fill ${k==='overestimated'?'warn':k==='about_right'?'alt':''}" style="width:${100*n/Math.max(g.count,1)}%"></div></div></div>`).join('')}</div>
    <div class="divider"></div><div class="card-eyebrow">EXTRACTED THEMES — SYNTHETIC NOTES</div><div class="theme-cloud">${Object.entries(g.theme_counts).map(([k,n])=>`<span class="tag">${escapeHtml(k)} · ${n}</span>`).join('') || '<span class="muted">No patterns detected</span>'}</div>
    <p class="micro" style="margin-top:14px">${escapeHtml(g.public_note)} Thematic tags are deterministic keyword matches, not verified findings.</p>
-   ${g.round_two_count?`<div class="divider"></div><p class="data-label">ROUND TWO</p><p style="margin-top:8px"><b>${g.round_two_count}</b> revisions received · Revised estimates median <b>${pct(g.round_two_median)}</b> (based only on revised responses)</p>`:''}
+   ${g.round_two_count?`<div class="divider"></div><p class="data-label">ROUND TWO</p><p style="margin-top:8px"><b>${g.round_two_count}</b> revisions received · Full-panel current median <b>${pct(g.round_two_median)}</b> (unchanged forecasts retained; median shift ${g.median_change_pp ?? '—'} percentage points)</p>`:''}
    </div>`;
 }
 async function renderExpert() {

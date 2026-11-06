@@ -13,7 +13,7 @@ import sqlite3
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from statistics import median
+from statistics import median, quantiles
 from typing import Literal
 
 from fastapi import Depends, FastAPI, Header, HTTPException
@@ -76,7 +76,7 @@ TAG_WORDS = {
     "Health": ("health", "hospital", "clinic", "medical"),
 }
 
-app = FastAPI(title="SIGNAL — ACAPS Ground Truth Demo", version="0.1.0", description="Synthetic-data-only hackathon prototype")
+app = FastAPI(title="SIGNAL — ACAPS Ground Truth Demo", version="0.2.0", description="Synthetic-data-only hackathon prototype")
 
 
 def now() -> str:
@@ -210,27 +210,61 @@ def require_expert(auth=Depends(session)):
     return auth
 
 
+def describe_probabilities(values):
+    """Describe a small, non-random panel; no population inference or confidence intervals."""
+    if not values:
+        return {"median": None, "range": [], "average": None, "iqr": None, "mad": None}
+    med = median(values)
+    # Quartiles for panels with at least four estimates; inclusive interpolation.
+    # An IQR is descriptive, NOT a confidence interval or model uncertainty.
+    q1, _, q3 = quantiles(values, n=4, method="inclusive") if len(values) >= 4 else (None, None, None)
+    return {
+        "median": med,
+        "range": [min(values), max(values)],
+        "average": round(sum(values) / len(values), 1),
+        "iqr": round(q3 - q1, 2) if q1 is not None else None,
+        "mad": median([abs(x - med) for x in values]),
+    }
+
+
 def compute_group(conn):
-    submissions = [dict(r) for r in conn.execute("SELECT * FROM submissions")]
+    """Calculate complete-panel Delphi comparisons, keeping unrevised estimates.
+
+    Round 2 is a full-panel *current view*, not a median of the people who
+    happen to revise. It exists only after at least one revision is received.
+    These statistics describe synthetic judgments and are not crisis forecasts.
+    """
+    submissions = [dict(r) for r in conn.execute("SELECT * FROM submissions ORDER BY expert_id")]
     revisions = {r["expert_id"]: r["probability"] for r in conn.execute("SELECT expert_id,probability FROM revisions")}
     n = len(submissions)
-    probs = [r["probability"] for r in submissions]
-    second = [revisions[r["expert_id"]] for r in submissions if r["expert_id"] in revisions]
+    original = [r["probability"] for r in submissions]
+    current = [revisions.get(r["expert_id"], r["probability"]) for r in submissions]
+    first = describe_probabilities(original)
+    second = describe_probabilities(current) if revisions else None
     agreement = {k: sum(r["agreement"] == k for r in submissions) for k in ("underestimated", "about_right", "overestimated")}
-    themes = {name: sum(any(term in r["note"].lower() for term in terms) for r in submissions) for name,terms in TAG_WORDS.items()}
-    themes = {k:v for k,v in themes.items() if v}
+    themes = {name: sum(any(term in r["note"].lower() for term in terms) for r in submissions) for name, terms in TAG_WORDS.items()}
+    themes = {k: v for k, v in themes.items() if v}
     return {
         "count": n,
         "expected": len(EXPERTS),
         "ready": n >= len(EXPERTS),
-        "median": median(probs) if probs else None,
-        "range": [min(probs), max(probs)] if probs else [],
-        "average": round(sum(probs)/n, 1) if n else None,
+        # Backwards compatible initial-round fields.
+        "median": first["median"],
+        "range": first["range"],
+        "average": first["average"],
+        "iqr": first["iqr"],
+        "mad": first["mad"],
         "agreement": agreement,
         "theme_counts": themes,
-        "round_two_count": len(second),
-        "round_two_median": median(second) if second else None,
-        "public_note": "Aggregate synthetic opinions only. Not a verified crisis forecast or ACAPS-endorsed assessment.",
+        "round_two_count": len(revisions),
+        "round_two_median": second["median"] if second else None,
+        "round_two_range": second["range"] if second else [],
+        "round_two_iqr": second["iqr"] if second else None,
+        "round_two_mad": second["mad"] if second else None,
+        "round_two_unrevised_count": n - len(revisions) if second else None,
+        "median_change_pp": round(second["median"] - first["median"], 2) if second else None,
+        "round_two_method": "All initial panel members retained; unchanged forecasts carried forward" if second else None,
+        "public_note": "Aggregate synthetic opinions only. Descriptive panel statistics, not representative estimates or ACAPS-endorsed forecasts.",
     }
 
 
@@ -341,8 +375,15 @@ def feedback(auth=Depends(require_expert)):
         # Never expose a single second-round forecast or an isolated theme in a tiny panel.
         group["theme_counts"] = {k: v for k, v in group["theme_counts"].items() if v >= 2}
         if group["round_two_count"] < len(EXPERTS):
+            # Never expose a small number of revised contributions to peers.
             group["round_two_count"] = 0
             group["round_two_median"] = None
+            group["round_two_range"] = []
+            group["round_two_iqr"] = None
+            group["round_two_mad"] = None
+            group["round_two_unrevised_count"] = None
+            group["median_change_pp"] = None
+            group["round_two_method"] = None
         return {"available": True, "group": group}
 
 

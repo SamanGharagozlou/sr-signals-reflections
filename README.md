@@ -18,6 +18,26 @@ Open **http://127.0.0.1:8765** (Swagger docs: **http://127.0.0.1:8765/docs**).
 
 **No Node.js, Lovable, cloud account, API key, or LLM are required.**
 
+## Phase 2A: statistically valid panel comparisons
+
+The moderator's **round-two median** now describes the entire original panel:
+experts who revise use their updated estimate; experts who do not revise keep
+(their previously recorded) initial estimate. It is **not** the median of the
+subset who happened to revise. The API also reports IQR (inclusive quartiles),
+median absolute deviation (MAD), and the change in panel median in percentage
+points, without making inferential claims about the population.
+
+When fewer than all five experts have revised, the peer-facing API suppresses
+second-round numerical details to avoid revealing early individual revisions.
+This patch does **not** implement production anonymity: small-panel privacy,
+role policies, output snapshots, and deployment security need further work.
+
+Run statistical and workflow tests:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
 ## Exact live demo sequence
 
 1. Open app. Read official ACAPS risk **R1043** (Chad, high risk, active).

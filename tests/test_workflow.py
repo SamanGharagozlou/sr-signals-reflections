@@ -70,6 +70,12 @@ class WorkflowTests(unittest.TestCase):
         peer_feedback=self.client.get('/api/expert/feedback',headers=expert).json()['group']
         self.assertEqual(peer_feedback['round_two_count'],0)
         self.assertIsNone(peer_feedback['round_two_median'])
+        self.assertEqual(peer_feedback['round_two_range'], [])
+        self.assertIsNone(peer_feedback['round_two_iqr'])
+        self.assertIsNone(peer_feedback['round_two_mad'])
+        self.assertIsNone(peer_feedback['round_two_unrevised_count'])
+        self.assertIsNone(peer_feedback['median_change_pp'])
+        self.assertIsNone(peer_feedback['round_two_method'])
         self.assertTrue(all(n>=2 for n in peer_feedback['theme_counts'].values()))
         self.assertEqual(self.client.post('/api/moderator/publish',headers=mod,json={}).status_code,200)
         published=self.client.get('/api/public-summary').json()

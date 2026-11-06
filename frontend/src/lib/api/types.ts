@@ -47,6 +47,37 @@ export interface ModeratorRiskContext {
   warnings: string[];
 }
 
+/** Read-only Risk Radar inventory. Risk-level labels are source categories, not numeric event forecasts. */
+export interface RiskInventoryEntry {
+  id: string;
+  title: string;
+  country: string;
+  level: string;
+  status?: string;
+  probability_category?: string;
+  impact?: string;
+  trend?: string;
+}
+export interface RiskInventory {
+  count: number;
+  source: string;
+  risks: RiskInventoryEntry[];
+}
+export interface RiskDetail {
+  id: string;
+  title: string;
+  country: string;
+  risk_level: string;
+  status: string;
+  probability_category: string;
+  impact: string;
+  trend: string;
+  exposure: string;
+  priority_needs?: string;
+  triggers: string;
+  sources: string;
+}
+
 export interface ForecastQuestion {
   text: string;
   resolutionDate: string;
@@ -195,6 +226,8 @@ export interface PublicSummary {
 }
 
 export interface SignalApi {
+  getRiskInventory(): Promise<RiskInventory>;
+  getRiskDetail(riskId: string): Promise<RiskDetail>;
   getConsultation(): Promise<Consultation>;
   login(role: DemoRole): Promise<{ role: DemoRole }>;
   me(): Promise<{ role: DemoRole | null }>;

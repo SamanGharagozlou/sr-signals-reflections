@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExpertRouteImport } from './routes/expert'
+import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as ModeratorRouteImport } from './routes/moderator'
 import { Route as PublicRouteImport } from './routes/public'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const ExpertRoute = ExpertRouteImport.update({
   id: '/expert',
   path: '/expert',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExploreRoute = ExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ModeratorRoute = ModeratorRouteImport.update({
@@ -38,12 +44,14 @@ const PublicRoute = PublicRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/expert': typeof ExpertRoute
+  '/explore': typeof ExploreRoute
   '/moderator': typeof ModeratorRoute
   '/public': typeof PublicRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/expert': typeof ExpertRoute
+  '/explore': typeof ExploreRoute
   '/moderator': typeof ModeratorRoute
   '/public': typeof PublicRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/expert': typeof ExpertRoute
+  '/explore': typeof ExploreRoute
   '/moderator': typeof ModeratorRoute
   '/public': typeof PublicRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/expert' | '/moderator' | '/public'
+  fullPaths: '/' | '/expert' | '/explore' | '/moderator' | '/public'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/expert' | '/moderator' | '/public'
-  id: '__root__' | '/' | '/expert' | '/moderator' | '/public'
+  to: '/' | '/expert' | '/explore' | '/moderator' | '/public'
+  id: '__root__' | '/' | '/expert' | '/explore' | '/moderator' | '/public'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ExpertRoute: typeof ExpertRoute
+  ExploreRoute: typeof ExploreRoute
   ModeratorRoute: typeof ModeratorRoute
   PublicRoute: typeof PublicRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/expert'
       fullPath: '/expert'
       preLoaderRoute: typeof ExpertRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explore': {
+      id: '/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/moderator': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ExpertRoute: ExpertRoute,
+  ExploreRoute: ExploreRoute,
   ModeratorRoute: ModeratorRoute,
   PublicRoute: PublicRoute,
 }

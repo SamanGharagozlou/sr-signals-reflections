@@ -133,6 +133,12 @@ function groupPanel(g) {
    ${g.round_two_count?`<div class="divider"></div><p class="data-label">ROUND TWO</p><p style="margin-top:8px"><b>${g.round_two_count}</b> revisions received · Full-panel current median <b>${pct(g.round_two_median)}</b> (unchanged forecasts retained; median shift ${g.median_change_pp ?? '—'} percentage points)</p>`:''}
    </div>`;
 }
+function peerGroupPanel(g) {
+  return `<div class="card"><div class="card-eyebrow">PRIVACY-LIMITED GROUP FEEDBACK</div><h3 style="margin:10px 0">How did the panel respond?</h3>
+    <div class="summary-stats"><div class="summary-stat"><strong>${escapeHtml(g.forecast_median_band || '—')}</strong><span>Median forecast band</span></div><div class="summary-stat"><strong>${escapeHtml(g.panel_size)}</strong><span>Panel participants</span></div></div>
+    <div class="divider"></div><p>${escapeHtml(g.assessment_pattern)}</p>
+    <p class="micro" style="margin-top:14px">${escapeHtml(g.notice)} Individual details and live revisions are restricted to moderator analysis.</p></div>`;
+}
 async function renderExpert() {
   const shell=$('expert-shell');
   if (!state.consultation) return;
@@ -160,7 +166,7 @@ async function loadFeedback() {
   try{const res=await request('/api/expert/feedback');state.feedback=res;
   if(!res.available){el.innerHTML=`<div class="alert alert-warn"><b>Feedback not yet available.</b><br>${escapeHtml(res.reason)}</div>`;return;}
   const g=res.group;
-  el.innerHTML=`<div class="alert"><b>Anonymous group feedback released.</b> No individual contributions or identifying notes are shown.</div>${groupPanel(g)}${state.me.revision?`<div class="alert">✓ You revised your probability to <b>${pct(state.me.revision.probability)}</b>. Your original forecast remains recorded.</div>`:
+  el.innerHTML=`<div class="alert"><b>Anonymous group feedback released.</b> No individual contributions or identifying notes are shown.</div>${peerGroupPanel(g)}${state.me.revision?`<div class="alert">✓ You revised your probability to <b>${pct(state.me.revision.probability)}</b>. Your original forecast remains recorded.</div>`:
   `<div class="card" style="margin-top:12px"><h3>Optional second round</h3><p class="hint" style="margin-top:8px">You may maintain your original view or revise it once after seeing the group aggregate.</p><form id="revision-form"><div class="slider-wrap"><div class="slider-head"><span class="data-label">REVISED PROBABILITY</span><span class="slider-number" id="revision-readout">${pct(state.me.submission.probability)}</span></div><input id="revision-input" type="range" min="0" max="100" step="5" value="${state.me.submission.probability}" aria-label="Revised event probability"></div><button class="btn btn-dark" type="submit" style="margin-top:14px">Submit one revision</button></form></div>`}`;
   $('revision-input')?.addEventListener('input',e=>$('revision-readout').textContent=`${e.target.value}%`);
   $('revision-form')?.addEventListener('submit',async e=>{e.preventDefault();try{await request('/api/expert/revise','POST',{probability:Number($('revision-input').value)});await loadMe();await loadFeedback();notify('Second-round estimate saved.');}catch(err){notify(err.message,true)}});
@@ -198,7 +204,7 @@ async function renderPublic() {
   const el=$('public-shell');
   try{let p=await request('/api/public-summary');
   if(!p.available){el.innerHTML=`<div class="card"><span class="tag tag-amber">NOT YET APPROVED</span><h2 style="margin:15px 0">No public group summary available.</h2><p class="muted">A group-level summary can appear here only after all five synthetic participants contribute, an ACAPS-style moderator releases anonymous feedback, and the moderator approves a safe public aggregate.</p><div class="callout-small" style="margin-top:17px">This is an intentional privacy gate. Raw expert notes and identities are never exposed by this endpoint.</div></div>`;return;}
-  el.innerHTML=`<div class="card"><span class="tag tag-green">✓ MODERATOR-APPROVED DEMO OUTPUT</span><h2 style="margin:15px 0">Eastern Chad risk consultation</h2><div class="summary-stats"><div class="summary-stat"><strong>${escapeHtml(p.risk_id)}</strong><span>Consulted risk</span></div><div class="summary-stat"><strong>${p.panel_size}</strong><span>Synthetic experts</span></div><div class="summary-stat"><strong>${pct(p.median_probability)}</strong><span>Group median probability</span></div></div><div class="divider"></div><div class="callout-small">${escapeHtml(p.notice)} No individual estimates, identities, or free-text comments are publicly revealed.</div></div>`;
+  el.innerHTML=`<div class="card"><span class="tag tag-green">✓ MODERATOR-APPROVED DEMO OUTPUT</span><h2 style="margin:15px 0">Eastern Chad risk consultation</h2><div class="summary-stats"><div class="summary-stat"><strong>${escapeHtml(p.risk_id)}</strong><span>Consulted risk</span></div><div class="summary-stat"><strong>${p.panel_size}</strong><span>Synthetic experts</span></div><div class="summary-stat"><strong>${escapeHtml(p.forecast_median_band)}</strong><span>Forecast median band</span></div></div><div class="divider"></div><div class="callout-small">${escapeHtml(p.notice)} No individual estimates, identities, or free-text comments are publicly revealed.</div></div>`;
   }catch(err){el.innerHTML=`<div class="alert alert-error">${escapeHtml(err.message)}</div>`;}
 }
 async function start() {

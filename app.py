@@ -11,12 +11,12 @@ import os
 import secrets
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from statistics import median, quantiles
 from typing import Literal
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
@@ -76,7 +76,18 @@ TAG_WORDS = {
     "Health": ("health", "hospital", "clinic", "medical"),
 }
 
-app = FastAPI(title="SIGNAL — ACAPS Ground Truth Demo", version="0.2.0", description="Synthetic-data-only hackathon prototype")
+SESSION_TTL = timedelta(hours=8)  # Hackathon session expiry; NOT production authentication.
+
+app = FastAPI(title="SIGNAL — ACAPS Ground Truth Demo", version="0.3.0", description="Synthetic-data-only hackathon prototype")
+
+
+@app.middleware("http")
+async def protect_api_caches(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
 
 
 def now() -> str:
@@ -127,6 +138,10 @@ def initialize():
                     VALUES(?,?,?,?,?,?,?)""", (*e, now()))
         conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('feedback_released','false')")
         conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('public_approved','false')")
+        conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('public_snapshot','')")
+        # Fail closed for local databases created before snapshot support existed.
+        if not config(conn, "public_snapshot"):
+            set_config(conn, "public_approved", "false")
 
 
 def config(conn, key):
@@ -192,8 +207,16 @@ def session(authorization: str | None = Header(default=None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(401, "Demo login required")
     with db() as conn:
-        entry = conn.execute("SELECT role,expert_id FROM sessions WHERE token=?", (authorization[7:],)).fetchone()
+        entry = conn.execute("SELECT role,expert_id,created_at FROM sessions WHERE token=?", (authorization[7:],)).fetchone()
         if not entry:
+            raise HTTPException(401, "Session expired; sign in again")
+        try:
+            issued = datetime.fromisoformat(entry["created_at"])
+            if issued.tzinfo is None or datetime.now(timezone.utc) - issued > SESSION_TTL or issued > datetime.now(timezone.utc):
+                raise ValueError("Invalid or expired token")
+        except (ValueError, TypeError):
+            conn.execute("DELETE FROM sessions WHERE token=?", (authorization[7:],))
+            conn.commit()  # persist revocation before raising 401
             raise HTTPException(401, "Session expired; sign in again")
         return {"role": entry["role"], "expert_id": entry["expert_id"]}
 
@@ -265,6 +288,43 @@ def compute_group(conn):
         "median_change_pp": round(second["median"] - first["median"], 2) if second else None,
         "round_two_method": "All initial panel members retained; unchanged forecasts carried forward" if second else None,
         "public_note": "Aggregate synthetic opinions only. Descriptive panel statistics, not representative estimates or ACAPS-endorsed forecasts.",
+    }
+
+
+def forecast_band(value: float | None) -> str | None:
+    """Return a wide non-overlapping bin, never an exact small-panel median."""
+    if value is None:
+        return None
+    lower = min(int(value) // 20 * 20, 80)
+    upper = 100 if lower == 80 else lower + 19
+    return f"{lower}–{upper}%"
+
+
+def peer_view(group: dict) -> dict:
+    """Fixed, coarse round-one feedback; no single-person breakdowns or evolving revision data.
+
+    A five-person panel is not truly anonymous. This is demo-only data
+    minimization, not a privacy or statistical-anonymity guarantee.
+    """
+    agreement = group["agreement"]
+    categories = sum(count > 0 for count in agreement.values())
+    return {
+        "panel_size": group["count"],
+        "forecast_median_band": forecast_band(group["median"]),
+        "assessment_pattern": "Different views were expressed" if categories > 1 else "Similar views were expressed",
+        "notice": "Synthetic grouped feedback, rounded to reduce disclosure. No individual estimates, notes, subgroup counts or partial revisions.",
+    }
+
+
+def safe_public_snapshot(group: dict) -> dict:
+    """Create a stable, minimal, moderator-approved output once."""
+    return {
+        "available": True,
+        "risk_id": "R1043",
+        "panel_size": group["count"],
+        "forecast_median_band": forecast_band(group["median"]),
+        "approved_at": now(),
+        "notice": "Synthetic demonstration; not an official ACAPS assessment. Rounded aggregate, not a validated event prediction.",
     }
 
 
@@ -371,20 +431,7 @@ def feedback(auth=Depends(require_expert)):
         group = compute_group(conn)
         if not group["ready"]:
             return {"available": False, "reason": "Insufficient panel size"}
-        # Peer-facing feedback is deliberately less detailed than the moderator view.
-        # Never expose a single second-round forecast or an isolated theme in a tiny panel.
-        group["theme_counts"] = {k: v for k, v in group["theme_counts"].items() if v >= 2}
-        if group["round_two_count"] < len(EXPERTS):
-            # Never expose a small number of revised contributions to peers.
-            group["round_two_count"] = 0
-            group["round_two_median"] = None
-            group["round_two_range"] = []
-            group["round_two_iqr"] = None
-            group["round_two_mad"] = None
-            group["round_two_unrevised_count"] = None
-            group["median_change_pp"] = None
-            group["round_two_method"] = None
-        return {"available": True, "group": group}
+        return {"available": True, "group": peer_view(group)}
 
 
 @app.post("/api/expert/revise")
@@ -423,21 +470,23 @@ def release(auth=Depends(require_moderator)):
 @app.post("/api/moderator/publish")
 def publish(auth=Depends(require_moderator)):
     with db() as conn:
-        if not compute_group(conn)["ready"] or config(conn,"feedback_released")!="true":
+        group = compute_group(conn)
+        if not group["ready"] or config(conn,"feedback_released")!="true":
             raise HTTPException(409,"Complete panel and release feedback before approving an aggregate")
+        if config(conn, "public_approved") == "true":
+            raise HTTPException(409, "Aggregate already approved; frozen publication cannot be recalculated")
+        set_config(conn, "public_snapshot", json.dumps(safe_public_snapshot(group), sort_keys=True))
         set_config(conn,"public_approved","true")
-        return {"approved":True, "message":"Synthetic group-level insights only; not an official ACAPS publication"}
+        return {"approved":True, "message":"Frozen synthetic, privacy-limited aggregate approved; not an official ACAPS publication"}
 
 
 @app.get("/api/public-summary")
 def public_summary():
     with db() as conn:
-        if config(conn,"public_approved")!="true" or not compute_group(conn)["ready"]:
+        if config(conn,"public_approved")!="true" or not config(conn, "public_snapshot"):
             return {"available":False, "reason":"No moderator-approved aggregate available"}
-        group=compute_group(conn)
-        # Intentionally only high-level figures, no quotes, small cohorts, individual data or locations.
-        return {"available":True,"risk_id":"R1043","panel_size":group["count"],
-                "median_probability":group["median"], "notice":"Synthetic demonstration; not an official ACAPS assessment."}
+        # Publication stays byte-identical even if a late Delphi revision follows.
+        return json.loads(config(conn, "public_snapshot"))
 
 
 @app.post("/api/demo/reset")
@@ -448,6 +497,7 @@ def reset(auth=Depends(require_moderator)):
         conn.execute("DELETE FROM sessions")
         set_config(conn,"feedback_released","false")
         set_config(conn,"public_approved","false")
+        set_config(conn,"public_snapshot","")
         for e in SYNTHETIC_RESPONSES:
             conn.execute("INSERT INTO submissions(expert_id,agreement,probability,confidence,note,anonymity,created_at) VALUES(?,?,?,?,?,?,?)",(*e,now()))
     return {"reset":True,"message":"Synthetic demo restored to 4 of 5 responses. Login again."}

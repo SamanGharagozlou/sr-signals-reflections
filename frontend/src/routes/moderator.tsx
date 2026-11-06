@@ -47,6 +47,15 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
       <div className="space-y-6 min-w-0">
+        <section className="gt-moderator-heading" aria-label="Moderator workspace overview">
+          <div className="gt-section-label text-white/70">GROUND TRUTH / MODERATOR DESK / SYNTHETIC</div>
+          <h1 className="gt-editorial-heading mt-2 text-white">Risk intelligence, with humans in control.</h1>
+          <div className="gt-moderator-metrics">
+            <div><span>Panel</span><strong>{c.submittedCount} / {c.panelSize}</strong></div>
+            <div><span>Group feedback</span><strong>{c.feedbackReleased ? "Released" : "Pending"}</strong></div>
+            <div><span>Public snapshot</span><strong>{c.publicSnapshotApproved ? "Approved" : "Pending"}</strong></div>
+          </div>
+        </section>
         <ModeratorDecisionBrief consultation={c} />
         <div id="risk-evidence"><RiskSummary risk={c.risk} /></div>
         <ModeratorSourceTrace riskId={c.risk.id} />

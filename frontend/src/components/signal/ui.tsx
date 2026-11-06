@@ -10,16 +10,46 @@ import type { Risk } from "@/lib/api/types";
 
 export function AppHeader({ section }: { section?: string }) {
   return (
-    <header className="border-b bg-card">
+    <header className="gt-masthead">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link to="/" className="flex min-h-11 items-center gap-2">
-          <span className="font-serif text-xl font-semibold text-heading">SIGNAL</span>
-          <span className="hidden text-sm text-muted-foreground sm:inline">Ground Truth &amp; Forecasting</span>
+        <Link to="/" className="flex min-h-12 items-center gap-3" aria-label="SIGNAL Ground Truth home">
+          <span aria-hidden className="gt-brand-mark">S</span>
+          <span className="flex flex-col">
+            <span className="gt-brand">SIGNAL</span>
+            <span className="gt-brand-subtitle">GROUND TRUTH / FORECASTING</span>
+          </span>
         </Link>
-        {section && <span className="rounded-full bg-teal-soft px-3 py-1 text-sm font-medium text-accent-foreground">{section}</span>}
+        <div className="flex items-center gap-3">
+          <span className="hidden text-[10px] font-semibold tracking-[0.18em] text-white/55 uppercase md:inline">Expert insight · human decision</span>
+          {section && <span className="gt-role-chip">{section}</span>}
+        </div>
       </div>
       <DemoBanner />
     </header>
+  );
+}
+
+
+/** Presentational stage bar adapted from Rita's expert-round storyboard.
+ * Labels are navigation context only; it never bypasses backend workflow gates. */
+export function GroundTruthJourney({ current, description }: { current: 0 | 1 | 2 | 3 | 4; description?: string }) {
+  const stages = ["Brief", "Call", "Reveal", "Revise", "Receipt"];
+  return (
+    <nav aria-label="Delphi journey" className="gt-journey">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/15 pb-3">
+        <p className="gt-journey-kicker">GROUND TRUTH / EXPERT ROUND</p>
+        <p className="text-xs text-white/70">{description || "Human-reviewed · synthetic demo"}</p>
+      </div>
+      <ol className="gt-journey-steps">
+        {stages.map((stage, i) => (
+          <li key={stage} aria-current={i === current ? "step" : undefined}
+            className={`gt-journey-stage ${i === current ? "gt-journey-active" : ""} ${i < current ? "gt-journey-complete" : ""}`}>
+            <span className="gt-journey-number">{String(i + 1).padStart(2, "0")}</span>
+            <span>{stage}</span>
+          </li>
+        ))}
+      </ol>
+    </nav>
   );
 }
 

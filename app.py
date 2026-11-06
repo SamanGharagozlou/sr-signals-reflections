@@ -23,10 +23,12 @@ from pydantic import BaseModel, Field
 from risk_context import build_risk_context
 from historical_evaluation import summarize_historical_outcomes
 from moderator_synthesis import build_moderator_synthesis
+from severity_index import severity_for_risk
 
 ROOT = Path(__file__).resolve().parent
 DB_PATH = Path(os.environ.get("SIGNAL_DB_PATH", ROOT / "signal_demo.db"))
 RISK_CSV = Path(os.environ.get("SIGNAL_RISK_CSV", ROOT / "data" / "risk-radar-export.csv"))
+SEVERITY_MANIFEST = Path(os.environ.get("SIGNAL_SEVERITY_MANIFEST", ROOT / "data" / "inform-severity-matches.json"))
 if not RISK_CSV.exists():
     sibling = ROOT.parent / "HFG8-ACAPS-Ground-Truth" / "data" / "risk-radar-export.csv"
     if sibling.exists():
@@ -398,6 +400,20 @@ def selected_risk(risk_id: str):
     if r is None:
         raise HTTPException(404, "Risk not in available dataset")
     return risk_card(r)
+
+
+@app.get("/api/risks/{risk_id}/severity")
+def risk_severity(risk_id: str):
+    """Public official-index metadata, only for manually matched crisis records.
+
+    The index is not a probabilistic forecast or SIGNAL-computed severity.
+    No AI imputation, country-level substitution, or implicit crisis matching.
+    """
+    records, _ = get_risks()
+    record = next((r for r in records if r.get("Risk ID") == risk_id), None)
+    if record is None:
+        raise HTTPException(404, "Risk not in available dataset")
+    return severity_for_risk(risk_id, str(record.get("Country", "")), SEVERITY_MANIFEST)
 
 
 @app.get("/api/risks/{risk_id}/context")

@@ -51,12 +51,28 @@ export interface ExpertReceipt {
   revisedProbability: number | null;
 }
 
+export interface DelphiCounterpoint {
+  id: string;
+  title: string;
+  text: string;
+  notice: string;
+}
+
+export interface ModeratorCounterpoint {
+  available: boolean;
+  reason?: string | null;
+  options: Pick<DelphiCounterpoint, "id" | "title" | "text">[];
+  approved_id: string | null;
+  notice: string;
+}
+
 export interface ExpertFeedback {
   released: boolean;
   /** Coarse band, rounded to 10 points. */
   centralBand?: string;
   agreementSummary?: string;
   canRevise?: boolean;
+  counterpoint?: DelphiCounterpoint | null;
 }
 
 export interface PanelStats {
@@ -163,6 +179,8 @@ export interface SignalApi {
   getHistoricalEvaluation(): Promise<HistoricalEvaluation>;
   getModeratorSynthesis(): Promise<ModeratorSynthesis>;
   approveModeratorFollowup(questionId: string): Promise<void>;
+  getModeratorCounterpoint(): Promise<ModeratorCounterpoint>;
+  approveModeratorCounterpoint(promptId: string): Promise<void>;
   simulateFifthContribution(): Promise<void>;
   releaseFeedback(): Promise<void>;
   publishSnapshot(): Promise<void>;

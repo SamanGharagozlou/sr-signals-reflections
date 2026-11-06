@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { Users } from "lucide-react";
 import { toast } from "sonner";
 import { AppHeader, ConfirmAction, DeniedState, ErrorState, Loading, RiskSummary, StatePanel } from "@/components/signal/ui";
@@ -49,6 +50,7 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
         <RiskSummary risk={c.risk} />
         <HistoricalOutcomes />
         <ModeratorEvidenceSynthesis />
+        <ModeratorReflectionPrompt />
 
         <section className="rounded-lg border bg-card p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -182,6 +184,48 @@ function ModeratorEvidenceSynthesis() {
             />
           )}
           <p className="text-xs text-muted-foreground">{q.data.review_notice}</p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+
+/** One curated editorial counterargument, visible only after moderator approval. */
+function ModeratorReflectionPrompt() {
+  const q = useApi(() => api.getModeratorCounterpoint());
+  const [chosen, setChosen] = useState("attribution");
+  return (
+    <section className="rounded-lg border bg-card p-5" aria-label="Delphi reflection review">
+      <p className="text-xs font-semibold uppercase tracking-wider text-teal-deep">Delphi reflection · human moderation</p>
+      <h2 className="mt-1 text-lg font-semibold">Choose an expert counterpoint</h2>
+      <p className="mt-2 text-sm text-muted-foreground">These are fixed editorial questions, not AI conclusions, other experts' remarks or verified evidence. One approved prompt is shown with released feedback; it is never public.</p>
+      {q.status === "loading" && <p className="mt-3 text-sm text-muted-foreground">Loading review options…</p>}
+      {q.status === "error" && <p role="alert" className="mt-3 text-sm text-destructive">{q.error.message}</p>}
+      {q.status === "ok" && !q.data.available && <p className="mt-3 rounded-md bg-muted p-3 text-sm">{q.data.reason}</p>}
+      {q.status === "ok" && q.data.available && (
+        <div className="mt-4 space-y-3">
+          <fieldset disabled={!!q.data.approved_id} className="space-y-2">
+            <legend className="text-sm font-medium text-heading">Reflection prompt for round two</legend>
+            {q.data.options.map((o) => (
+              <label key={o.id} className={`mt-2 flex cursor-pointer gap-3 rounded-md border p-3 ${chosen === o.id ? "border-primary bg-teal-soft" : "bg-background"}`}>
+                <input type="radio" name="counterpoint" value={o.id} checked={(q.data.approved_id || chosen) === o.id}
+                  onChange={() => setChosen(o.id)} className="mt-1 h-4 w-4 accent-primary" />
+                <span className="text-sm"><strong className="block text-heading">{o.title}</strong><span className="mt-1 block text-muted-foreground">{o.text}</span></span>
+              </label>
+            ))}
+          </fieldset>
+          {q.data.approved_id ? (
+            <p className="rounded-md bg-teal-soft p-3 text-sm text-accent-foreground" role="status">Approved and available to submitted experts with released feedback. This prompt cannot be changed without resetting the demo.</p>
+          ) : (
+            <ConfirmAction label="Approve reflection for experts" title="Release this editorial counterpoint?"
+              description="Only a fixed question will appear in the expert feedback view; no raw notes, individual forecasts or identities are released. This cannot be changed without resetting the demo."
+              confirmLabel="Approve prompt" onConfirm={() => run(
+                () => api.approveModeratorCounterpoint(chosen),
+                "Reflection approved for experts", q.refresh,
+              )} />
+          )}
+          <p className="text-xs text-muted-foreground">{q.data.notice}</p>
         </div>
       )}
     </section>

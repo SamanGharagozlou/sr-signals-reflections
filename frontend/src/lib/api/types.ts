@@ -20,6 +20,33 @@ export interface Risk {
   expectedExposure: string;
 }
 
+/** Moderator-only source context returned by the existing ACAPS risk-context endpoint.
+ * Source links are references, not independently verified evidence. */
+export interface RiskSourceReference { label: string; url: string; }
+export interface RiskEvidenceSection {
+  text: string | null;
+  sources: RiskSourceReference[];
+}
+export interface ModeratorRiskContext {
+  risk_id: string | null;
+  country: string | null;
+  source: string;
+  assessment: {
+    status: string | null;
+    trend: string | null;
+    acaps_risk_level: string | null;
+    acaps_probability_category: string | null;
+    acaps_impact: string | null;
+    expected_exposure: string | null;
+    priority_needs: string[];
+  };
+  evidence: Record<"rationale" | "vulnerability_and_coping" | "expected_impact" | "materialisation", RiskEvidenceSection>;
+  triggers: { id: string | null; title: string | null; description: string | null; sources: RiskSourceReference[] }[];
+  unstructured_triggers: string | null;
+  missing_fields: string[];
+  warnings: string[];
+}
+
 export interface ForecastQuestion {
   text: string;
   resolutionDate: string;
@@ -176,6 +203,7 @@ export interface SignalApi {
   getExpertFeedback(): Promise<ExpertFeedback>;
   reviseExpert(probability: number): Promise<ExpertReceipt>;
   getModeratorDashboard(): Promise<ModeratorDashboard>;
+  getModeratorRiskContext(riskId: string): Promise<ModeratorRiskContext>;
   getHistoricalEvaluation(): Promise<HistoricalEvaluation>;
   getModeratorSynthesis(): Promise<ModeratorSynthesis>;
   approveModeratorFollowup(questionId: string): Promise<void>;

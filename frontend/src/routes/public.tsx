@@ -45,7 +45,14 @@ function PublicPage() {
                 <h2 className="text-base font-semibold">Expert panel forecast</h2>
                 <p className="mt-1 text-sm text-muted-foreground">{d.questionText}</p>
                 <p className="mt-4 text-3xl font-semibold text-heading">{d.medianBand}</p>
-                <p className="text-sm text-muted-foreground">Typical panel estimate (median band) from {d.panelN} experts</p>
+                <p className="text-sm text-muted-foreground">Finalized median band from {d.panelN} synthetic experts</p>
+                <p className="mt-2 text-sm font-medium text-heading">
+                  {d.forecastRound === "revised_panel"
+                    ? "Approved revised panel: unrevised forecasts carried forward"
+                    : d.forecastRound === "initial_panel"
+                      ? "Approved initial panel: no revisions at approval"
+                      : "Publication round not recorded in this older snapshot"}
+                </p>
                 <p className="mt-3">{d.spreadDescription}</p>
                 <p className="mt-1">{d.agreementSummary}</p>
               </section>

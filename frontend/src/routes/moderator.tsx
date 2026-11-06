@@ -145,7 +145,7 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
             title="Release group feedback?" description="Experts will see a coarse, rounded summary of the panel and may revise once."
             confirmLabel="Release" onConfirm={() => run(api.releaseFeedback, "Group feedback released", refresh)} />
           <ConfirmAction label={c.publicSnapshotApproved ? "Snapshot approved" : "Approve public snapshot"} disabled={c.publicSnapshotApproved || !full || !c.feedbackReleased}
-            title="Approve privacy-safe public snapshot?" description="A frozen, coarse median band becomes visible on the public summary. No individual forecasts or notes are included."
+            title="Approve the final panel view?" description="Approval freezes the full-panel median band: revised forecasts are included when present, and unchanged forecasts carry forward. Further revisions close. No individual forecasts or notes are published."
             confirmLabel="Approve" onConfirm={() => run(api.publishSnapshot, "Public snapshot approved", refresh)} />
           {!full && <p className="text-xs text-muted-foreground">Approval requires the full panel.</p>}
           <ConfirmAction variant="outline" label="Reset synthetic demo" title="Reset the demo?" description="All contributions, revisions and approvals return to the seeded 4/5 state."

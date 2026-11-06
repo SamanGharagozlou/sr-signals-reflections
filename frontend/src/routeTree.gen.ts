@@ -10,14 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as ExpertRouteImport } from './routes/expert'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as ModeratorRouteImport } from './routes/moderator'
 import { Route as PublicRouteImport } from './routes/public'
+import { Route as RiskIndexRouteImport } from './routes/risk-index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalysisRoute = AnalysisRouteImport.update({
+  id: '/analysis',
+  path: '/analysis',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExpertRoute = ExpertRouteImport.update({
@@ -40,43 +47,78 @@ const PublicRoute = PublicRouteImport.update({
   path: '/public',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RiskIndexRoute = RiskIndexRouteImport.update({
+  id: '/risk-index',
+  path: '/risk-index',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analysis': typeof AnalysisRoute
   '/expert': typeof ExpertRoute
   '/explore': typeof ExploreRoute
   '/moderator': typeof ModeratorRoute
   '/public': typeof PublicRoute
+  '/risk-index': typeof RiskIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analysis': typeof AnalysisRoute
   '/expert': typeof ExpertRoute
   '/explore': typeof ExploreRoute
   '/moderator': typeof ModeratorRoute
   '/public': typeof PublicRoute
+  '/risk-index': typeof RiskIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analysis': typeof AnalysisRoute
   '/expert': typeof ExpertRoute
   '/explore': typeof ExploreRoute
   '/moderator': typeof ModeratorRoute
   '/public': typeof PublicRoute
+  '/risk-index': typeof RiskIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/expert' | '/explore' | '/moderator' | '/public'
+  fullPaths:
+    | '/'
+    | '/analysis'
+    | '/expert'
+    | '/explore'
+    | '/moderator'
+    | '/public'
+    | '/risk-index'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/expert' | '/explore' | '/moderator' | '/public'
-  id: '__root__' | '/' | '/expert' | '/explore' | '/moderator' | '/public'
+  to:
+    | '/'
+    | '/analysis'
+    | '/expert'
+    | '/explore'
+    | '/moderator'
+    | '/public'
+    | '/risk-index'
+  id:
+    | '__root__'
+    | '/'
+    | '/analysis'
+    | '/expert'
+    | '/explore'
+    | '/moderator'
+    | '/public'
+    | '/risk-index'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalysisRoute: typeof AnalysisRoute
   ExpertRoute: typeof ExpertRoute
   ExploreRoute: typeof ExploreRoute
   ModeratorRoute: typeof ModeratorRoute
   PublicRoute: typeof PublicRoute
+  RiskIndexRoute: typeof RiskIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -86,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analysis': {
+      id: '/analysis'
+      path: '/analysis'
+      fullPath: '/analysis'
+      preLoaderRoute: typeof AnalysisRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/expert': {
@@ -116,15 +165,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/risk-index': {
+      id: '/risk-index'
+      path: '/risk-index'
+      fullPath: '/risk-index'
+      preLoaderRoute: typeof RiskIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalysisRoute: AnalysisRoute,
   ExpertRoute: ExpertRoute,
   ExploreRoute: ExploreRoute,
   ModeratorRoute: ModeratorRoute,
   PublicRoute: PublicRoute,
+  RiskIndexRoute: RiskIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

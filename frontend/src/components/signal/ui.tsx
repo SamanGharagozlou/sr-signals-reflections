@@ -20,7 +20,11 @@ export function AppHeader({ section }: { section?: string }) {
           </span>
         </Link>
         <div className="flex items-center gap-3">
-          <Link to="/explore" className="gt-header-explore">Risk Explorer <span aria-hidden>↗</span></Link>
+          <nav aria-label="SIGNAL intelligence views" className="gt-studio-topnav">
+            <Link to="/explore">Explore</Link>
+            <Link to="/risk-index">Risk Index</Link>
+            <Link to="/analysis">Analysis</Link>
+          </nav>
           <span className="hidden text-[10px] font-semibold tracking-[0.18em] text-white/55 uppercase md:inline">Expert insight · human decision</span>
           {section && <span className="gt-role-chip">{section}</span>}
         </div>

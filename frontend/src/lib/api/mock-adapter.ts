@@ -162,6 +162,29 @@ export const mockAdapter: SignalApi = {
       evidenceGaps: EVIDENCE_GAPS,
     });
   },
+  async getModeratorRiskContext() {
+    requireRole("moderator");
+    return delay({
+      risk_id: RISK_R1043.id,
+      country: "Chad",
+      source: "Browser-only synthetic mock — no verified source trail",
+      assessment: {
+        status: RISK_R1043.status, trend: null, acaps_risk_level: RISK_R1043.acapsRiskLevel,
+        acaps_probability_category: RISK_R1043.acapsProbability,
+        acaps_impact: RISK_R1043.acapsImpact, expected_exposure: RISK_R1043.expectedExposure,
+        priority_needs: [],
+      },
+      evidence: {
+        rationale: { text: null, sources: [] },
+        vulnerability_and_coping: { text: null, sources: [] },
+        expected_impact: { text: null, sources: [] },
+        materialisation: { text: null, sources: [] },
+      },
+      triggers: [], unstructured_triggers: null,
+      missing_fields: ["Source evidence not available in browser mock"],
+      warnings: ["This mock supplies no verified ACAPS evidence."],
+    });
+  },
   async getHistoricalEvaluation() {
     requireRole("moderator");
     return delay({ available: false, source: "Browser-only mock", reason: "Historical evaluation is only available from FastAPI with the official CSV." });

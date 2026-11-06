@@ -4,7 +4,7 @@
  * No client-side statistics, source synthesis, or unsupported access to raw submissions.
  * Demo-only shared invitation codes: NEVER use for real humanitarian contributors.
  */
-import { ApiError, type SignalApi, type DemoRole, type Consultation, type ExpertReceipt, type ModeratorDashboard, type PanelStats, type HistoricalEvaluation, type ModeratorSynthesis, type ModeratorCounterpoint, type DelphiCounterpoint } from "./types";
+import { ApiError, type SignalApi, type DemoRole, type Consultation, type ExpertReceipt, type ModeratorDashboard, type PanelStats, type HistoricalEvaluation, type ModeratorSynthesis, type ModeratorCounterpoint, type ModeratorRiskContext, type DelphiCounterpoint } from "./types";
 
 const PATH = "/api";
 const TOKEN_KEY = "signal-demo-token";
@@ -184,6 +184,9 @@ export const fastapiAdapter: SignalApi = {
         id:`theme-${i}`, claim: `${theme} · mentioned in ${count} synthetic note(s)`, confidence:"low" as const,
       })),
     };
+  },
+  async getModeratorRiskContext(riskId: string) {
+    return request<ModeratorRiskContext>(`/risks/${encodeURIComponent(riskId)}/context`, {}, true);
   },
   async getHistoricalEvaluation() {
     return request<HistoricalEvaluation>("/moderator/historical-evaluation", {}, true);

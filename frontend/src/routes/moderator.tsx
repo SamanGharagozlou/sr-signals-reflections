@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Users } from "lucide-react";
+import { ClipboardList, ExternalLink, Link2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AppHeader, ConfirmAction, DeniedState, ErrorState, Loading, RiskSummary, StatePanel } from "@/components/signal/ui";
 import { Button } from "@/components/ui/button";
 import { api, useApi } from "@/lib/api/client";
-import type { ModeratorDashboard, PanelStats, RiskAssessment } from "@/lib/api/types";
+import type { ModeratorDashboard, ModeratorRiskContext, PanelStats, RiskAssessment, RiskSourceReference } from "@/lib/api/types";
 
 export const Route = createFileRoute("/moderator")({
   head: () => ({
@@ -47,12 +47,11 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
       <div className="space-y-6 min-w-0">
-        <RiskSummary risk={c.risk} />
-        <HistoricalOutcomes />
-        <ModeratorEvidenceSynthesis />
-        <ModeratorReflectionPrompt />
+        <ModeratorDecisionBrief consultation={c} />
+        <div id="risk-evidence"><RiskSummary risk={c.risk} /></div>
+        <ModeratorSourceTrace riskId={c.risk.id} />
 
-        <section className="rounded-lg border bg-card p-5">
+        <section id="forecast-panel" className="rounded-lg border bg-card p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-teal">Expert numeric forecasts · moderator only</p>
@@ -103,6 +102,10 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
           <Agreement a={d.agreement} />
         </section>
 
+        <ModeratorEvidenceSynthesis />
+        <ModeratorReflectionPrompt />
+        <HistoricalOutcomes />
+
         <section>
           <h2 className="text-lg font-semibold">Aggregated note themes</h2>
           <p className="text-sm text-muted-foreground">Keyword-based theme counts from synthetic notes, not verified evidence or individual claims. Not shown publicly.</p>
@@ -119,10 +122,19 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
       </div>
 
       <aside className="space-y-4 lg:sticky lg:top-4 lg:self-start">
-        <section className="rounded-lg border bg-card p-5 space-y-3">
-          <h2 className="text-lg font-semibold">Workflow</h2>
-          <Status label="Group feedback" done={c.feedbackReleased} />
-          <Status label="Public snapshot" done={c.publicSnapshotApproved} />
+        <section id="human-checkpoints" className="rounded-lg border bg-card p-5 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-teal-deep">Human oversight</p>
+          <h2 className="text-lg font-semibold">Moderator action queue</h2>
+          <p className="text-sm font-medium text-heading" role="status">
+            {!full ? "Next: collect remaining independent forecasts" : !c.feedbackReleased ? "Next: review evidence and release group feedback" : !c.publicSnapshotApproved ? "Next: approve the public snapshot when ready" : "Snapshot published; future outcome review remains external"}
+          </p>
+          <div className="space-y-3 border-t pt-3">
+            <HumanCheckpoint number={1} title="Review source evidence" state="review" detail="Source inspection available; approval is not recorded by the demo." />
+            <HumanCheckpoint number={2} title="Validate consultation definition" state="configured" detail="Proposed six-month event preloaded; formal launch approval not implemented." />
+            <HumanCheckpoint number={3} title="Release Delphi group feedback" state={c.feedbackReleased ? "complete" : "pending"} detail="Protected by moderator-only release action." />
+            <HumanCheckpoint number={4} title="Approve public summary" state={c.publicSnapshotApproved ? "complete" : "pending"} detail="Frozen aggregate requires explicit moderator approval." />
+            <HumanCheckpoint number={5} title="Verify eventual outcome" state="later" detail={`After ${c.question.resolutionDate}; adjudication/scoring is not automated here.`} />
+          </div>
           {!full && <p className="text-sm text-muted-foreground">To finish the panel, submit the fifth synthetic contribution from the Expert view (FIELD-05), then refresh this dashboard.</p>}
           <ConfirmAction label={c.feedbackReleased ? "Feedback released" : "Release group feedback"} disabled={c.feedbackReleased || c.submittedCount < c.panelSize}
             title="Release group feedback?" description="Experts will see a coarse, rounded summary of the panel and may revise once."
@@ -142,6 +154,122 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
   );
 }
 
+
+/** Decision-oriented overview, careful not to equate ACAPS risk with observed severity. */
+function ModeratorDecisionBrief({ consultation: c }: { consultation: ModeratorDashboard["consultation"] }) {
+  return (
+    <section aria-label="Moderator decision brief" className="rounded-lg border bg-card p-5">
+      <p className="text-xs font-semibold uppercase tracking-wider text-teal-deep">Moderator workspace · synthetic consultation</p>
+      <h1 className="mt-1 font-serif text-2xl font-semibold text-heading">Decision brief · {c.risk.id}</h1>
+      <p className="mt-2 text-sm text-muted-foreground">See the current risk context and the future forecast separately. Neither is a funding decision or an official updated ACAPS assessment.</p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <div className="rounded-lg border bg-background p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-heading"><ClipboardList className="h-4 w-4 text-teal-deep" aria-hidden /> Current context / observed conditions</div>
+          <p className="mt-3 text-sm">Risk Radar record status: <strong>{c.risk.status}</strong></p>
+          <p className="mt-2 text-sm">ACAPS qualitative risk level: <strong>{c.risk.acapsRiskLevel}</strong></p>
+          <p className="mt-3 text-xs text-muted-foreground">Observed humanitarian severity is <strong>not independently scored</strong> in this screen. Risk level is a forward-looking risk classification, not a measurement of harm already experienced.</p>
+        </div>
+        <div className="rounded-lg border border-teal/30 bg-teal-soft/30 p-4">
+          <p className="text-sm font-semibold text-heading">Future event · six-month forecast</p>
+          <p className="mt-2 text-sm">{c.question.text}</p>
+          <p className="mt-3 text-xs font-medium text-heading">Resolution deadline: {c.question.resolutionDate}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{c.question.disclaimer}</p>
+        </div>
+      </div>
+      <details className="mt-4 rounded-md border bg-background px-4 py-3">
+        <summary className="cursor-pointer text-sm font-medium text-heading">How would an analyst resolve this forecast?</summary>
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+          {c.question.resolutionCriteria.map((rule, index) => <li key={index}>{rule}</li>)}
+        </ul>
+        <p className="mt-3 text-xs text-muted-foreground">No outcome is automatically verified or scored by this consultation.</p>
+      </details>
+      <nav aria-label="Moderator workspace sections" className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+        <a className="font-medium text-teal-deep underline underline-offset-2" href="#source-trace">Source trace</a>
+        <a className="font-medium text-teal-deep underline underline-offset-2" href="#forecast-panel">Panel statistics</a>
+        <a className="font-medium text-teal-deep underline underline-offset-2" href="#human-checkpoints">Human checkpoints</a>
+      </nav>
+    </section>
+  );
+}
+
+const EVIDENCE_LABELS = [
+  ["rationale", "Rationale"],
+  ["vulnerability_and_coping", "Current vulnerability and coping capacity"],
+  ["expected_impact", "Expected impact"],
+  ["materialisation", "Reported hazard materialisation"],
+] as const;
+
+function ExternalSources({ sources }: { sources: RiskSourceReference[] }) {
+  if (!sources.length) return <p className="text-xs text-muted-foreground">No source link supplied in this field.</p>;
+  return (
+    <ul className="mt-2 space-y-1">
+      {sources.map((source, i) => {
+        // This is an outbound reference supplied by the dataset, never proof of source quality.
+        if (!/^https?:\/\//i.test(source.url)) return null;
+        return (
+          <li key={`${source.url}-${i}`}>
+            <a href={source.url} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 break-all text-xs font-medium text-teal-deep underline underline-offset-2">
+              {source.label || source.url}<ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
+              <span className="sr-only">(opens in new tab)</span>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** Read-only source trail from the existing moderator-only API. */
+function ModeratorSourceTrace({ riskId }: { riskId: string }) {
+  const q = useApi(() => api.getModeratorRiskContext(riskId));
+  return (
+    <section id="source-trace" aria-label="Moderator source trace" className="rounded-lg border bg-card p-5">
+      <div className="flex items-center gap-2">
+        <Link2 className="h-4 w-4 text-teal-deep" aria-hidden />
+        <h2 className="text-lg font-semibold">Trace the evidence</h2>
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">Read-only ACAPS Risk Radar context for the moderator. Source links are references; SIGNAL has not independently checked them.</p>
+      {q.status === "loading" && <p className="mt-3 text-sm text-muted-foreground">Loading source fields…</p>}
+      {q.status === "error" && <p role="alert" className="mt-3 text-sm text-destructive">Source detail unavailable: {q.error.message}</p>}
+      {q.status === "ok" && <SourceTraceDetails context={q.data} />}
+    </section>
+  );
+}
+
+function SourceTraceDetails({ context }: { context: ModeratorRiskContext }) {
+  return (
+    <div className="mt-4 space-y-3">
+      <p className="text-xs text-muted-foreground">Dataset origin: <span className="break-words font-medium text-heading">{context.source}</span> · Country: {context.country || "Not provided"}</p>
+      <div className="grid gap-3 md:grid-cols-2">
+        {EVIDENCE_LABELS.map(([key, label]) => {
+          const item = context.evidence[key];
+          return (
+            <details key={key} className="rounded-md border bg-background px-4 py-3">
+              <summary className="cursor-pointer text-sm font-medium text-heading">{label} · {item.sources.length} source link(s)</summary>
+              <p className="mt-3 max-h-44 overflow-y-auto whitespace-pre-line break-words text-sm text-muted-foreground">{item.text || "No explanatory text supplied."}</p>
+              <ExternalSources sources={item.sources} />
+            </details>
+          );
+        })}
+      </div>
+      <details className="rounded-md border bg-background px-4 py-3">
+        <summary className="cursor-pointer text-sm font-medium text-heading">Trigger references · {context.triggers.length} structured trigger(s)</summary>
+        <div className="mt-3 space-y-3">
+          {context.triggers.length ? context.triggers.map((trigger, index) => (
+            <div key={`${trigger.id || index}`} className="border-t pt-3 first:border-0 first:pt-0">
+              <p className="text-sm font-medium text-heading">{trigger.id || `Trigger ${index + 1}`}: {trigger.title || "Untitled"}</p>
+              <p className="mt-1 max-h-36 overflow-y-auto whitespace-pre-line break-words text-sm text-muted-foreground">{trigger.description || "No description supplied."}</p>
+              <ExternalSources sources={trigger.sources} />
+            </div>
+          )) : <p className="text-sm text-muted-foreground">No structured triggers supplied. Review the original text in the risk card above.</p>}
+        </div>
+      </details>
+      {context.missing_fields.length > 0 && <p className="rounded-md border border-amber/40 bg-amber-soft p-3 text-xs text-amber-foreground">Missing in source record: {context.missing_fields.join(", ")}. Do not infer absent information.</p>}
+      <p className="text-xs text-muted-foreground">Moderator source review is not an approval or verification of accuracy. No external data is fetched automatically.</p>
+    </div>
+  );
+}
 
 /** Deterministic moderator-only verification suggestion, never automatically sent. */
 function ModeratorEvidenceSynthesis() {
@@ -327,11 +455,20 @@ function Agreement({ a }: { a: Record<RiskAssessment, number> }) {
   );
 }
 
-function Status({ label, done }: { label: string; done: boolean }) {
+type CheckpointState = "complete" | "pending" | "configured" | "review" | "later";
+function HumanCheckpoint({ number, title, state, detail }: {
+  number: number; title: string; state: CheckpointState; detail: string;
+}) {
+  const label: Record<CheckpointState, string> = {
+    complete: "Approved", pending: "Pending", configured: "Demo only", review: "Not tracked", later: "Future",
+  };
   return (
-    <div className="flex items-center justify-between text-sm">
-      <span>{label}</span>
-      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${done ? "bg-teal-soft text-accent-foreground" : "bg-muted text-muted-foreground"}`}>{done ? "Done" : "Pending"}</span>
+    <div className="rounded-md border bg-background p-3 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="font-medium text-heading">{number}. {title}</span>
+        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${state === "complete" ? "bg-teal-soft text-accent-foreground" : "bg-muted text-muted-foreground"}`}>{label[state]}</span>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
     </div>
   );
 }

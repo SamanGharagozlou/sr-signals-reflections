@@ -4,7 +4,7 @@
  * No client-side statistics, source synthesis, or unsupported access to raw submissions.
  * Demo-only shared invitation codes: NEVER use for real humanitarian contributors.
  */
-import { ApiError, type SignalApi, type DemoRole, type Consultation, type ExpertReceipt, type ModeratorDashboard, type PanelStats, type HistoricalEvaluation } from "./types";
+import { ApiError, type SignalApi, type DemoRole, type Consultation, type ExpertReceipt, type ModeratorDashboard, type PanelStats, type HistoricalEvaluation, type ModeratorSynthesis } from "./types";
 
 const PATH = "/api";
 const TOKEN_KEY = "signal-demo-token";
@@ -186,6 +186,14 @@ export const fastapiAdapter: SignalApi = {
   },
   async getHistoricalEvaluation() {
     return request<HistoricalEvaluation>("/moderator/historical-evaluation", {}, true);
+  },
+  async getModeratorSynthesis() {
+    return request<ModeratorSynthesis>("/moderator/synthesis", {}, true);
+  },
+  async approveModeratorFollowup(questionId) {
+    await request("/moderator/follow-up/approve", {
+      method: "POST", body: JSON.stringify({ question_id: questionId }),
+    }, true);
   },
   async simulateFifthContribution() {
     // The backend deliberately requires an expert-authenticated contribution.

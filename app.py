@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field
 
 from risk_context import build_risk_context
 from historical_evaluation import summarize_historical_outcomes
+from moderator_synthesis import build_moderator_synthesis
 
 ROOT = Path(__file__).resolve().parent
 DB_PATH = Path(os.environ.get("SIGNAL_DB_PATH", ROOT / "signal_demo.db"))
@@ -142,6 +143,7 @@ def initialize():
         conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('feedback_released','false')")
         conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('public_approved','false')")
         conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('public_snapshot','')")
+        conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('moderator_followup','')")
         # Fail closed for local databases created before snapshot support existed.
         if not config(conn, "public_snapshot"):
             set_config(conn, "public_approved", "false")
@@ -199,6 +201,10 @@ class Contribution(BaseModel):
 
 class Revision(BaseModel):
     probability: int = Field(ge=0, le=100)
+
+
+class FollowupApproval(BaseModel):
+    question_id: str = Field(min_length=1, max_length=40)
 
 
 class ScoreRequest(BaseModel):
@@ -484,6 +490,44 @@ def moderator_dashboard(auth=Depends(require_moderator)):
                 "warning":"Moderator sees aggregated synthetic data only; no individual identities or raw notes are exposed by this endpoint."}
 
 
+@app.get("/api/moderator/synthesis")
+def moderator_synthesis(auth=Depends(require_moderator)):
+    """Moderator-only, non-generative question suggestion; no private note quotes."""
+    with db() as conn:
+        result = build_moderator_synthesis(
+            compute_group(conn), config(conn, "feedback_released") == "true"
+        )
+        if result["available"]:
+            stored = config(conn, "moderator_followup")
+            result["approved"] = json.loads(stored) if stored else None
+        return result
+
+
+@app.post("/api/moderator/follow-up/approve")
+def approve_followup(body: FollowupApproval, auth=Depends(require_moderator)):
+    """Approve a fixed question for later human use; NEVER dispatch automatically."""
+    with db() as conn:
+        result = build_moderator_synthesis(
+            compute_group(conn), config(conn, "feedback_released") == "true"
+        )
+        if not result["available"]:
+            raise HTTPException(409, result["reason"])
+        if config(conn, "moderator_followup"):
+            raise HTTPException(409, "Follow-up already approved; reset demo to start again")
+        proposed = result["proposed"]
+        if body.question_id != proposed["id"]:
+            raise HTTPException(400, "Only the current vetted suggestion can be approved")
+        approved = {
+            "id": proposed["id"],
+            "topic": proposed["topic"],
+            "question": proposed["question"],
+            "approved_at": now(),
+            "status": "Approved draft for possible manual follow-up; not sent",
+        }
+        set_config(conn, "moderator_followup", json.dumps(approved, sort_keys=True))
+        return {"approved": True, "followup": approved, "sent": False}
+
+
 @app.post("/api/moderator/release")
 def release(auth=Depends(require_moderator)):
     with db() as conn:
@@ -524,6 +568,7 @@ def reset(auth=Depends(require_moderator)):
         set_config(conn,"feedback_released","false")
         set_config(conn,"public_approved","false")
         set_config(conn,"public_snapshot","")
+        set_config(conn,"moderator_followup","")
         for e in SYNTHETIC_RESPONSES:
             conn.execute("INSERT INTO submissions(expert_id,agreement,probability,confidence,note,anonymity,created_at) VALUES(?,?,?,?,?,?,?)",(*e,now()))
     return {"reset":True,"message":"Synthetic demo restored to 4 of 5 responses. Login again."}

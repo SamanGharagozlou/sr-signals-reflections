@@ -119,6 +119,25 @@ export interface HistoricalEvaluation {
   brier_evaluation?: string;
 }
 
+export interface ModeratorFollowup {
+  id: string;
+  topic: string;
+  question: string;
+  approved_at: string;
+  status: string;
+}
+
+export interface ModeratorSynthesis {
+  available: boolean;
+  reason?: string;
+  panel_size?: number;
+  disagreement_summary?: string;
+  evidence_status?: string;
+  proposed?: { id: string; topic: string; question: string };
+  review_notice?: string;
+  approved?: ModeratorFollowup | null;
+}
+
 export interface PublicSummary {
   approved: boolean;
   approvedAt?: string;
@@ -142,6 +161,8 @@ export interface SignalApi {
   reviseExpert(probability: number): Promise<ExpertReceipt>;
   getModeratorDashboard(): Promise<ModeratorDashboard>;
   getHistoricalEvaluation(): Promise<HistoricalEvaluation>;
+  getModeratorSynthesis(): Promise<ModeratorSynthesis>;
+  approveModeratorFollowup(questionId: string): Promise<void>;
   simulateFifthContribution(): Promise<void>;
   releaseFeedback(): Promise<void>;
   publishSnapshot(): Promise<void>;

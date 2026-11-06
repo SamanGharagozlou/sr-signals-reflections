@@ -48,6 +48,7 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
       <div className="space-y-6 min-w-0">
         <RiskSummary risk={c.risk} />
         <HistoricalOutcomes />
+        <ModeratorEvidenceSynthesis />
 
         <section className="rounded-lg border bg-card p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -139,6 +140,53 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
   );
 }
 
+
+/** Deterministic moderator-only verification suggestion, never automatically sent. */
+function ModeratorEvidenceSynthesis() {
+  const q = useApi(() => api.getModeratorSynthesis());
+  const proposalId = q.status === "ok" ? q.data.proposed?.id : undefined;
+  return (
+    <section className="rounded-lg border bg-card p-5" aria-label="Moderator evidence synthesis">
+      <p className="text-xs font-semibold uppercase tracking-wider text-teal">Expert-to-analyst feedback loop</p>
+      <h2 className="mt-1 text-lg font-semibold">Review a targeted follow-up</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        SIGNAL checks recurring keyword themes and suggests one question for human verification.
+        No expert quotations, source verification claims, or automatic outreach.
+      </p>
+      {q.status === "loading" && <p className="mt-4 text-sm text-muted-foreground">Preparing synthesis…</p>}
+      {q.status === "error" && <p role="alert" className="mt-4 text-sm text-destructive">{q.error.message}</p>}
+      {q.status === "ok" && !q.data.available && <p className="mt-4 rounded-md bg-muted p-3 text-sm">{q.data.reason}</p>}
+      {q.status === "ok" && q.data.available && q.data.proposed && (
+        <div className="mt-4 space-y-3">
+          <p className="text-sm text-heading">{q.data.disagreement_summary}</p>
+          <p className="text-sm text-muted-foreground">{q.data.evidence_status}</p>
+          <div className="rounded-md border bg-background p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-teal-deep">Suggested · {q.data.proposed.topic}</p>
+            <p className="mt-2 text-sm font-medium text-heading">{q.data.proposed.question}</p>
+          </div>
+          {q.data.approved ? (
+            <div className="rounded-md border border-green/30 bg-green/5 p-3 text-sm" role="status">
+              Approved draft at {new Date(q.data.approved.approved_at).toLocaleString()}; not dispatched to any expert.
+            </div>
+          ) : (
+            <ConfirmAction
+              label="Approve draft for manual follow-up"
+              title="Approve this verification question?"
+              description="The chosen question is stored for a moderator to use manually. SIGNAL will not contact experts or publish this draft."
+              confirmLabel="Approve draft"
+              onConfirm={() => run(
+                () => api.approveModeratorFollowup(proposalId ?? ""),
+                "Follow-up draft approved; no message sent",
+                q.refresh,
+              )}
+            />
+          )}
+          <p className="text-xs text-muted-foreground">{q.data.review_notice}</p>
+        </div>
+      )}
+    </section>
+  );
+}
 
 /** Historical selected-risk frequencies, NOT forecast calibration. Moderator only. */
 function HistoricalOutcomes() {

@@ -177,3 +177,13 @@ binary-outcome pairs. Neither helper overwrites an original ACAPS risk rating,
 and the Risk Radar export is never converted to made-up percentage forecasts.
 
 Run `python -m unittest discover -s tests -q` before merging.
+
+## Phase 4B — Moderator-reviewed verification question (synthetic demo)
+
+SIGNAL adds a bounded **moderator-only** decision-support endpoint:
+
+- `GET /api/moderator/synthesis` — after all five fictional experts contribute and feedback is released, describes whether views differ and nominates **one** curated follow-up question based on recurring keyword themes in fictional notes. Single mentions do not nominate a theme. It does not expose raw notes, identities, exact individual forecasts, or evidence quotations.
+- `POST /api/moderator/follow-up/approve` with `{ "question_id": "..." }` — a moderator may approve **only the current proposed question**. Approval is stored in the synthetic SQLite database, is one-time per reset, and **does not notify experts**, alter the ACAPS risk rating, or publish the question. This is a proposed manual follow-up only.
+- Resetting the demo clears the approval. The existing public snapshot remains unrelated and never incorporates this moderator-only question.
+
+This is a deterministic, prewritten question library, **not AI evidence generation or verified humanitarian reporting**. Keyword matches are unverified and are not citations. Never use this hackathon demo with real field reports or personal data.

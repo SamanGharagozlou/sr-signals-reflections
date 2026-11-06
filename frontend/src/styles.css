@@ -131,3 +131,44 @@
   }
   h1, h2, h3 { font-family: var(--font-serif); color: var(--color-heading); letter-spacing: -0.01em; }
 }
+
+
+/* Phase 6: Rita-inspired Ground Truth editorial surface.
+   Pure presentation. No mocked results, permissions or API shortcuts. */
+.gt-masthead { background: #063e61; color: #fff; border-top: 4px solid #00a0bd; }
+.gt-brand-mark { display:flex; width:40px; height:40px; flex-shrink:0; align-items:center; justify-content:center; border:1.5px solid #64b9cd; color:white; font-size:26px; font-weight:900; letter-spacing:-.08em; }
+.gt-brand { color:white; font-family:Impact,"Arial Narrow",ui-sans-serif,sans-serif; font-size:27px; letter-spacing:.105em; line-height:1.05; }
+.gt-brand-subtitle { color:#abdce7; font-size:9px; letter-spacing:.16em; font-weight:700; line-height:1.65; }
+.gt-role-chip { border:1px solid rgba(255,255,255,.35); border-radius:999px; padding:7px 12px; background:rgba(255,255,255,.08); color:white; font-size:12px; font-weight:700; }
+.gt-home-hero { background:linear-gradient(125deg,#073d5e 0%,#064b70 68%,#006d8b 100%); color:white; padding:clamp(24px,5vw,56px); border-radius:8px; position:relative; overflow:hidden; }
+.gt-home-hero::after { content:""; position:absolute; width:270px;height:270px; border:1px solid rgba(128,224,237,.26); border-radius:50%; right:-95px;top:-65px; box-shadow:0 0 0 50px rgba(128,224,237,.05),0 0 0 120px rgba(128,224,237,.04); pointer-events:none; }
+.gt-hero-eyebrow { position:relative;z-index:1; font-size:11px; letter-spacing:.13em; font-weight:750; color:#a8e0e7; }
+.gt-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#4fc9d8; margin-right:9px; }
+.gt-display { position:relative; z-index:1; color:#fff; font-family:Impact,"Arial Narrow",ui-sans-serif,sans-serif; letter-spacing:.022em; font-size:clamp(36px,6.7vw,76px); line-height:1.07; font-weight:800; }
+.gt-hero-emphasis { color:#7ee1e6; }
+.gt-home-stages { position:relative;z-index:1; display:grid;grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:32px; padding-top:18px; border-top:1px solid rgba(255,255,255,.3); font-size:12px; color:#fff; }
+.gt-home-stages span { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.gt-home-stages strong { color:#83e4e7; font-family:ui-monospace,monospace; font-size:11px; }
+.gt-role-card { border-top:3px solid #008eaa; border-radius:5px; box-shadow:0 5px 18px rgba(2,41,60,.04); }
+.gt-role-card:hover { box-shadow:0 12px 30px rgba(2,41,60,.09); transform:translateY(-2px); }
+.gt-journey { background:#073f63; border-radius:8px; padding:18px 20px 16px; color:white; margin-bottom:22px; }
+.gt-journey-kicker { color:#9cdde8; font-size:11px; font-weight:750; letter-spacing:.14em; }
+.gt-journey-steps { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); margin-top:17px; gap:5px; }
+.gt-journey-stage { display:flex; flex-direction:column;gap:7px; border-top:2px solid rgba(255,255,255,.2); color:rgba(255,255,255,.55); padding-top:10px; font-size:12px; font-weight:650; }
+.gt-journey-active { border-color:#75d8e4; color:white; }
+.gt-journey-complete { border-color:#379fb6; color:#addfe7; }
+.gt-journey-number { font-family:ui-monospace,monospace; font-size:10px; opacity:.85; }
+.gt-expert-intro { border-left:4px solid #0096b6; padding:12px 0 14px 19px; margin-bottom:22px; }
+.gt-section-label { color:#00738c; font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+.gt-editorial-heading { font-family:Impact,"Arial Narrow",ui-sans-serif,sans-serif; font-size:clamp(27px,4.1vw,43px); letter-spacing:.025em; font-weight:800; line-height:1.14; }
+.gt-call-entry { background:#eaf3f6; border-bottom:3px solid #0089a4; border-radius:5px 5px 0 0; padding:6px 14px; width:max-content; max-width:100%; }
+.gt-probability-rule { height:7px; margin-top:18px; border-radius:99px; background:linear-gradient(to right,#ddf0f5,#9fd3e2,#4faec9,#00809c,#0b4a6f); }
+.gt-receipt-card { border-top:4px solid #007e9e; }
+.gt-reveal-band { border-left:4px solid #0b4a6f; }
+.gt-moderator-heading { background:#073f63; color:#fff; padding:24px 26px; border-radius:8px; }
+.gt-moderator-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding-top:20px; margin-top:20px; border-top:1px solid rgba(255,255,255,.25); }
+.gt-moderator-metrics div { display:flex; flex-direction:column; gap:5px; min-width:0; }
+.gt-moderator-metrics span { color:#a8dbe6; font-size:11px; }
+.gt-moderator-metrics strong { font-size:clamp(14px,2vw,19px); font-weight:750; color:white; overflow-wrap:anywhere; }
+@media(max-width:520px) { .gt-home-stages { grid-template-columns:repeat(2,minmax(0,1fr)); row-gap:14px; } .gt-journey { padding:16px 12px; } .gt-journey-stage { font-size:10px; } .gt-moderator-heading { padding:22px 17px; } }
+@media(prefers-reduced-motion:reduce) { .gt-role-card { transform:none!important; transition:none; } }

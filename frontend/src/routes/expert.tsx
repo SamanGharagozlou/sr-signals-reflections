@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { CheckCircle2, ChevronDown, Hourglass, ShieldCheck, MessageCircleQuestion, EyeOff, ArrowLeftRight } from "lucide-react";
 import { toast } from "sonner";
-import { AppHeader, DeniedState, ErrorState, Loading, RiskSummary, StatePanel } from "@/components/signal/ui";
+import { AppHeader, DeniedState, ErrorState, GroundTruthJourney, Loading, RiskSummary, StatePanel } from "@/components/signal/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +37,7 @@ function ExpertPage() {
   return (
     <div className="min-h-screen">
       <AppHeader section="Expert" />
-      <main className="mx-auto max-w-xl px-4 py-8">{body}</main>
+      <main className="mx-auto max-w-2xl px-4 py-8">{body}</main>
     </div>
   );
 }
@@ -111,10 +111,13 @@ function Wizard({ consultation }: { consultation: Consultation }) {
 
   return (
     <div>
-      <div className="mb-6 rounded-lg border bg-card px-4 py-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-teal-deep">Independent Delphi round · synthetic exercise</p>
-        <h1 className="mt-1 font-serif text-2xl font-semibold text-heading">Your expert contribution</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Make your own assessment before seeing other forecasts. Group feedback is shown only after the moderator releases it.</p>
+      <GroundTruthJourney current={step < 2 ? 0 : 1} description={`Risk ${risk.id} · independent round`} />
+      <div className="gt-expert-intro">
+        <p className="gt-section-label">{step < 2 ? "THE BRIEF / BEFORE YOUR CALL" : "YOUR INDEPENDENT CALL / ROUND ONE"}</p>
+        <h1 className="gt-editorial-heading">{step < 2 ? "Your view matters." : "Make your call."}</h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Make your own assessment before seeing other forecasts. Group feedback appears only after the moderator releases it.
+        </p>
       </div>
       <nav aria-label="Progress" className="mb-6">
         <p className="text-sm text-muted-foreground">{step === 4 ? "Review before submitting" : `Step ${step + 1} of 4 · ${STEPS[step]}`}</p>
@@ -159,7 +162,7 @@ function Wizard({ consultation }: { consultation: Consultation }) {
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-teal-deep"><EyeOff className="h-4 w-4" aria-hidden /> Blind call · round one</div>
             <p className="inline-block rounded-md bg-amber-soft px-2.5 py-1 text-xs font-medium text-amber-foreground">{question.disclaimer}</p>
             <h2 className="text-xl font-semibold">{question.text}</h2>
-            <p className="text-sm text-muted-foreground">Enter your own probability. The panel median is deliberately hidden until your forecast is submitted and feedback is released.</p>
+            <p className="text-sm text-muted-foreground">Make your call before you see anyone else's. The panel median remains hidden until submission and moderator release.</p>
             <details className="group rounded-md border bg-card">
               <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between px-4 text-sm font-medium text-heading">
                 How will this be resolved? <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" aria-hidden />
@@ -169,13 +172,15 @@ function Wizard({ consultation }: { consultation: Consultation }) {
             <div>
               <label htmlFor="prob" className="block font-medium text-heading">Your probability (0–100%)</label>
               <p id="prob-hint" className="text-sm text-muted-foreground">This is separate from ACAPS's qualitative "High" probability category.</p>
-              <div className="mt-2 flex items-center gap-2">
+              <div className="gt-call-entry mt-3 flex items-center gap-2">
                 <Input id="prob" inputMode="numeric" autoComplete="off" value={d.probability} placeholder="0–100"
                   onChange={(e) => setD({ ...d, probability: e.target.value.replace(/[^\d]/g, "").slice(0, 3) })}
                   aria-invalid={!!error} aria-describedby={`prob-hint${error ? " prob-err" : ""}`}
-                  className="h-12 w-28 text-lg" />
-                <span className="text-lg">%</span>
+                  className="h-16 w-36 border-0 bg-transparent text-center text-4xl font-bold text-heading shadow-none focus-visible:ring-2" />
+                <span className="text-3xl font-bold text-heading">%</span>
               </div>
+              <div className="gt-probability-rule" aria-hidden><span /></div>
+              <div className="mt-1 flex justify-between gap-2 text-xs text-muted-foreground"><span>0% · Won't happen</span><span>50% · Coin flip</span><span>100% · Will happen</span></div>
               {error && <p id="prob-err" role="alert" className="mt-2 text-sm text-destructive">{error}</p>}
             </div>
           </div>
@@ -260,11 +265,15 @@ function Row({ k, v, onEdit }: { k: string; v: string; onEdit: () => void }) {
 
 function AfterSubmit({ receipt }: { receipt: ExpertReceipt }) {
   const fb = useApi(() => api.getExpertFeedback());
+  const journeyStage: 1 | 3 | 4 = fb.status === "ok" && fb.data.released
+    ? (fb.data.canRevise ? 3 : 4) : 1;
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border bg-card p-6">
+      <GroundTruthJourney current={journeyStage} description="Round-one call recorded" />
+      <section className="gt-receipt-card rounded-lg border bg-card p-6">
         <CheckCircle2 className="h-7 w-7 text-primary" aria-hidden />
-        <h1 className="mt-2 text-2xl font-semibold">Round-one call recorded</h1>
+        <p className="gt-section-label mt-3">YOUR CALL / SAVED</p>
+        <h1 className="gt-editorial-heading mt-1">Your first call is in.</h1>
         <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
           <div><dt className="text-muted-foreground">Receipt</dt><dd className="font-mono font-medium text-heading">{receipt.receiptCode}</dd></div>
           <div><dt className="text-muted-foreground">Submitted</dt><dd className="font-medium text-heading">{new Date(receipt.submittedAt).toLocaleString()}</dd></div>
@@ -285,7 +294,7 @@ function AfterSubmit({ receipt }: { receipt: ExpertReceipt }) {
         <section className="rounded-lg border bg-card p-6">
           <p className="text-xs font-semibold uppercase tracking-wider text-teal-deep">Reveal · moderator released</p>
           <h2 className="mt-1 text-xl font-semibold">See the panel's perspective</h2>
-          <div className="mt-4 rounded-lg bg-teal-soft px-4 py-4">
+          <div className="gt-reveal-band mt-4 rounded-lg bg-teal-soft px-4 py-4">
             <p className="text-sm text-accent-foreground">Round-one panel median band</p>
             <p className="mt-1 font-serif text-3xl font-semibold text-heading">{fb.data.centralBand}</p>
             <p className="mt-1 text-sm text-accent-foreground">{fb.data.agreementSummary}</p>

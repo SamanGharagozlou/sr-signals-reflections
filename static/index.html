@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b241e">
+  <meta name="description" content="SIGNAL: a synthetic-data prototype for expert-led humanitarian risk consultations.">
+  <title>SIGNAL | Ground Truth & Forecasting</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inside">
+      <div class="brand" aria-label="SIGNAL home"><div class="mark" aria-hidden="true"><i></i><i></i><i></i></div><span>SIGNAL</span><span class="brand-hint">GROUND TRUTH</span></div>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="nav-button active" data-page="overview">Overview</button>
+        <button class="nav-button" data-page="expert">Expert space</button>
+        <button class="nav-button" data-page="moderator">Moderator</button>
+        <button class="nav-button" data-page="library">Risk library</button>
+        <button class="nav-button" data-page="public">Public output</button>
+      </nav>
+      <span class="mode-label"><span class="status-dot"></span> SYNTHETIC DEMO</span>
+    </div>
+  </header>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <main class="container">
+    <section class="page" id="page-overview">
+      <div class="hero">
+        <div class="eyebrow"><span class="pulse"></span> HUMANITARIAN RISK INTELLIGENCE / ACAPS CHALLENGE</div>
+        <h1>Better-grounded risk insights.<br><em>Powered by expert judgment.</em></h1>
+        <p>Give trusted humanitarian experts a meaningful way to challenge risk assessments, share forecasts, and learn from anonymous group feedback — without another long survey.</p>
+        <div class="hero-actions"><button class="btn btn-primary" id="start-expert">Start expert consultation <span aria-hidden="true">↗</span></button><button class="btn btn-outline" id="start-mod">Open moderator view</button></div>
+      </div>
+      <div class="metrics" id="overview-metrics"></div>
+      <div class="section-head"><div><span class="section-kicker">LIVE CHALLENGE CONTEXT</span><h2>Featured consultation</h2></div><span class="tag tag-amber">Official ACAPS risk / Synthetic responses</span></div>
+      <div class="main-grid">
+        <div class="card risk-detail" id="overview-risk"><p class="muted">Loading official risk context…</p></div>
+        <div class="card process-card"><div class="card-eyebrow">HOW SIGNAL WORKS</div><h3>One trusted loop</h3>
+          <ol class="steps"><li><b>Invite</b><span>5–10 domain experts to a moderated panel</span></li><li><b>Ground truth</b><span>Independent judgment + one missing factor</span></li><li><b>Compare</b><span>Safe, anonymous agreement and disagreement</span></li><li><b>Refine</b><span>Optional Delphi revision round</span></li><li><b>Review</b><span>Human moderation and learning over time</span></li></ol>
+          <div class="divider"></div><p class="micro">No AI chatbot. No automatic crisis declarations. Human judgment stays at the center.</p></div>
+      </div>
+      <div class="callout"><span class="callout-icon">ⓘ</span><p><b>Demo integrity:</b> the risk record comes from the organizer's ACAPS dataset (with an offline fallback). The panel members, responses, and proposed forecast question are fictional. Do not enter real or sensitive humanitarian information.</p></div>
+    </section>
+    <section class="page" id="page-expert" hidden>
+      <div class="page-heading"><div><span class="section-kicker">EXPERT CONTRIBUTION</span><h1>Your local perspective matters.</h1><p>One focused consultation, designed to respect your time and privacy.</p></div><span class="tag">~2 minute experience</span></div>
+      <div id="expert-shell"></div>
+    </section>
+    <section class="page" id="page-moderator" hidden>
+      <div class="page-heading"><div><span class="section-kicker">TRUSTED PANEL · HUMAN REVIEW</span><h1>Moderator workbench</h1><p>Understand where experts agree, diverge, and identify evidence gaps.</p></div><span class="tag tag-amber">Synthetic expert panel</span></div>
+      <div id="moderator-shell"></div>
+    </section>
+    <section class="page" id="page-library" hidden>
+      <div class="page-heading"><div><span class="section-kicker">ORGANIZER-PROVIDED DATA</span><h1>Risk library</h1><p>Browse the ACAPS Risk Radar export. The live demo consultation uses R1043.</p></div></div>
+      <div class="card"><div class="library-toolbar"><label class="sr-only" for="risk-search">Search risks</label><input id="risk-search" placeholder="Search country, title, or Risk ID" autocomplete="off"><span class="tag" id="library-count">Loading</span></div><div id="risk-list" class="risk-list"></div></div>
+    </section>
+    <section class="page" id="page-public" hidden>
+      <div class="page-heading"><div><span class="section-kicker">PRIVACY-SAFE OUTPUT</span><h1>Approved group insights</h1><p>Only approved aggregate data. No personal identities, raw notes, or attributed opinions.</p></div></div>
+      <div id="public-shell"></div>
+    </section>
+  </main>
+  <footer class="footer"><div class="container footer-inside"><span>SIGNAL · Hackathon for Good #8 · 6–8 November 2026</span><span>Independent synthetic prototype · Not an official ACAPS publication</span><a href="/docs" target="_blank" rel="noopener">Developer API ↗</a></div></footer>
+  <script src="/app.js" defer></script>
+</body>
+</html>

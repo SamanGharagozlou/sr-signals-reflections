@@ -1,0 +1,423 @@
+"""SIGNAL: standalone synthetic-data prototype for Hackathon for Good #8 / ACAPS.
+
+NOT production software. No real identities, field reports, or sensitive information.
+Backend is independent of any other project. Run: uvicorn app:app --reload.
+"""
+from __future__ import annotations
+
+import csv
+import json
+import os
+import secrets
+import sqlite3
+from contextlib import contextmanager
+from datetime import datetime, timezone
+from pathlib import Path
+from statistics import median
+from typing import Literal
+
+from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi.responses import FileResponse
+from pydantic import BaseModel, Field
+
+ROOT = Path(__file__).resolve().parent
+DB_PATH = Path(os.environ.get("SIGNAL_DB_PATH", ROOT / "signal_demo.db"))
+RISK_CSV = Path(os.environ.get("SIGNAL_RISK_CSV", ROOT / "data" / "risk-radar-export.csv"))
+if not RISK_CSV.exists():
+    sibling = ROOT.parent / "HFG8-ACAPS-Ground-Truth" / "data" / "risk-radar-export.csv"
+    if sibling.exists():
+        RISK_CSV = sibling
+
+# Authoritative demo fields from the original organizer-supplied Risk Radar workbook.
+# This embedded fixture is a minimal fallback, not a substitute for the official CSV.
+R1043 = {
+    "Risk ID": "R1043",
+    "Risk Title": "Escalating cross-border insecurity linked to the Sudan conflict increases protection risks and humanitarian needs in eastern Chad",
+    "Country": "Chad",
+    "Probability": "High",
+    "Impact": "4",
+    "Risk Level": "High",
+    "Risk trend": "Deteriorated",
+    "Status": "Active",
+    "Expected exposure": ">500,000",
+    "Expected priority needs": "Protection, Food security, Livelihoods, Health",
+    "Triggers": "Expansion of cross-border attacks and insecurity near the Chad–Sudan border",
+    "Source": "ACAPS Risk Radar export, provided for Hackathon for Good #8",
+}
+
+# The demo forecast is authored by SIGNAL, NOT a quoted ACAPS forecast question.
+FORECAST_QUESTION = {
+    "question": "Will at least one newly documented episode of cross-border attacks cause additional displacement in eastern Chad within the next six months?",
+    "deadline": "2027-05-06",
+    "resolution": "A moderator identifies an independently documented displacement episode attributed to a cross-border attack after 2026-11-06 and on or before 2027-05-06. Otherwise the result is not automatically resolved: missing evidence remains unresolved.",
+    "status": "Proposed demonstration question — not ACAPS-approved",
+}
+
+EXPERTS = [
+    ("expert-01", "FIELD-01", "Synthetic Expert 01"),
+    ("expert-02", "FIELD-02", "Synthetic Expert 02"),
+    ("expert-03", "FIELD-03", "Synthetic Expert 03"),
+    ("expert-04", "FIELD-04", "Synthetic Expert 04"),
+    ("expert-05", "FIELD-05", "Synthetic Expert 05"),
+]
+
+SYNTHETIC_RESPONSES = [
+    ("expert-01", "about_right", 70, "medium", "Aid access may deteriorate along cross-border routes.", "acaps_only"),
+    ("expert-02", "underestimated", 85, "high", "Displacement pressure may be rising.", "anonymous"),
+    ("expert-03", "about_right", 60, "medium", "Food security could worsen in host communities.", "pseudonymous"),
+    ("expert-04", "overestimated", 45, "low", "Some corridors may remain operational.", "acaps_only"),
+]
+
+TAG_WORDS = {
+    "Displacement": ("displac", "refuge", "migration"),
+    "Humanitarian access": ("access", "corridor", "deliver", "route"),
+    "Food security": ("food", "market", "price", "livelihood"),
+    "Security": ("attack", "insecurity", "border", "conflict"),
+    "Health": ("health", "hospital", "clinic", "medical"),
+}
+
+app = FastAPI(title="SIGNAL — ACAPS Ground Truth Demo", version="0.1.0", description="Synthetic-data-only hackathon prototype")
+
+
+def now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+@contextmanager
+def db():
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(DB_PATH), timeout=15)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys=ON")
+    try:
+        yield conn
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def initialize():
+    with db() as conn:
+        conn.executescript("""
+        CREATE TABLE IF NOT EXISTS experts (
+          id TEXT PRIMARY KEY, invite_code TEXT NOT NULL UNIQUE, label TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS submissions (
+          expert_id TEXT PRIMARY KEY REFERENCES experts(id), agreement TEXT NOT NULL,
+          probability INTEGER NOT NULL, confidence TEXT NOT NULL,
+          note TEXT NOT NULL, anonymity TEXT NOT NULL, created_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS revisions (
+          expert_id TEXT PRIMARY KEY REFERENCES experts(id), probability INTEGER NOT NULL,
+          created_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS sessions (
+          token TEXT PRIMARY KEY, role TEXT NOT NULL,
+          expert_id TEXT, created_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+        """)
+        for ex in EXPERTS:
+            conn.execute("INSERT OR IGNORE INTO experts(id,invite_code,label) VALUES(?,?,?)", ex)
+        n = conn.execute("SELECT COUNT(*) FROM submissions").fetchone()[0]
+        if n == 0:
+            for e in SYNTHETIC_RESPONSES:
+                conn.execute("""INSERT INTO submissions
+                    (expert_id,agreement,probability,confidence,note,anonymity,created_at)
+                    VALUES(?,?,?,?,?,?,?)""", (*e, now()))
+        conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('feedback_released','false')")
+        conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES('public_approved','false')")
+
+
+def config(conn, key):
+    row = conn.execute("SELECT value FROM settings WHERE key=?", (key,)).fetchone()
+    return row[0] if row else "false"
+
+
+def set_config(conn, key, val):
+    conn.execute("INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (key, val))
+
+
+def get_risks():
+    if RISK_CSV.exists():
+        try:
+            with open(RISK_CSV, newline="", encoding="utf-8-sig") as f:
+                records = list(csv.DictReader(f))
+            if any(r.get("Risk ID") == "R1043" for r in records):
+                return records, "official organizer-provided CSV"
+        except (OSError, UnicodeError, csv.Error):
+            pass
+    return [R1043], "built-in R1043 fallback (copy the official CSV into data/ for all 139 risks)"
+
+
+def risk_card(record):
+    return {
+        "id": record.get("Risk ID", ""),
+        "title": record.get("Risk Title", ""),
+        "country": record.get("Country", ""),
+        "probability_category": record.get("Probability", ""),
+        "impact": record.get("Impact", ""),
+        "risk_level": record.get("Risk Level", ""),
+        "trend": record.get("Risk trend", ""),
+        "status": record.get("Status", ""),
+        "exposure": record.get("Expected exposure", ""),
+        "priority_needs": record.get("Expected priority needs", ""),
+        "triggers": record.get("Triggers", "")[:700],
+        "sources": record.get("Source", "")[:400],
+    }
+
+
+class Login(BaseModel):
+    code: str = Field(min_length=1, max_length=80)
+
+
+class Contribution(BaseModel):
+    agreement: Literal["underestimated", "about_right", "overestimated"]
+    probability: int = Field(ge=0, le=100)
+    confidence: Literal["low", "medium", "high"]
+    note: str = Field(default="", max_length=300)
+    anonymity: Literal["acaps_only", "pseudonymous", "anonymous"]
+
+
+class Revision(BaseModel):
+    probability: int = Field(ge=0, le=100)
+
+
+class ScoreRequest(BaseModel):
+    probability: int = Field(ge=0, le=100)
+    outcome: Literal[0, 1]
+
+
+def session(authorization: str | None = Header(default=None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(401, "Demo login required")
+    with db() as conn:
+        entry = conn.execute("SELECT role,expert_id FROM sessions WHERE token=?", (authorization[7:],)).fetchone()
+        if not entry:
+            raise HTTPException(401, "Session expired; sign in again")
+        return {"role": entry["role"], "expert_id": entry["expert_id"]}
+
+
+def require_moderator(auth=Depends(session)):
+    if auth["role"] != "moderator":
+        raise HTTPException(403, "Moderator access required")
+    return auth
+
+
+def require_expert(auth=Depends(session)):
+    if auth["role"] != "expert":
+        raise HTTPException(403, "Expert access required")
+    return auth
+
+
+def compute_group(conn):
+    submissions = [dict(r) for r in conn.execute("SELECT * FROM submissions")]
+    revisions = {r["expert_id"]: r["probability"] for r in conn.execute("SELECT expert_id,probability FROM revisions")}
+    n = len(submissions)
+    probs = [r["probability"] for r in submissions]
+    second = [revisions[r["expert_id"]] for r in submissions if r["expert_id"] in revisions]
+    agreement = {k: sum(r["agreement"] == k for r in submissions) for k in ("underestimated", "about_right", "overestimated")}
+    themes = {name: sum(any(term in r["note"].lower() for term in terms) for r in submissions) for name,terms in TAG_WORDS.items()}
+    themes = {k:v for k,v in themes.items() if v}
+    return {
+        "count": n,
+        "expected": len(EXPERTS),
+        "ready": n >= len(EXPERTS),
+        "median": median(probs) if probs else None,
+        "range": [min(probs), max(probs)] if probs else [],
+        "average": round(sum(probs)/n, 1) if n else None,
+        "agreement": agreement,
+        "theme_counts": themes,
+        "round_two_count": len(second),
+        "round_two_median": median(second) if second else None,
+        "public_note": "Aggregate synthetic opinions only. Not a verified crisis forecast or ACAPS-endorsed assessment.",
+    }
+
+
+@app.get("/")
+def root():
+    return FileResponse(ROOT / "static" / "index.html")
+
+
+@app.get("/styles.css")
+def css():
+    return FileResponse(ROOT / "static" / "styles.css", media_type="text/css")
+
+
+@app.get("/app.js")
+def js():
+    return FileResponse(ROOT / "static" / "app.js", media_type="application/javascript")
+
+
+@app.get("/api/health")
+def health():
+    return {"status": "ok", "mode": "synthetic demo"}
+
+
+@app.get("/api/risks")
+def risks():
+    records, origin = get_risks()
+    return {"count": len(records), "source": origin, "risks": [
+        {"id": r.get("Risk ID"), "title": r.get("Risk Title"), "country": r.get("Country"), "level": r.get("Risk Level")}
+        for r in records]}
+
+
+@app.get("/api/risks/{risk_id}")
+def selected_risk(risk_id: str):
+    records,_ = get_risks()
+    r = next((r for r in records if r.get("Risk ID") == risk_id), None)
+    if r is None:
+        raise HTTPException(404, "Risk not in available dataset")
+    return risk_card(r)
+
+
+@app.get("/api/consultation")
+def consultation():
+    records, origin = get_risks()
+    r = next((r for r in records if r.get("Risk ID") == "R1043"), R1043)
+    with db() as conn:
+        n = conn.execute("SELECT COUNT(*) FROM submissions").fetchone()[0]
+        released = config(conn, "feedback_released") == "true"
+        published = config(conn, "public_approved") == "true"
+    return {"risk": risk_card(r), "source": origin, "forecast": FORECAST_QUESTION,
+            "responded": n, "panel_size": len(EXPERTS), "feedback_released": released,
+            "public_approved": published, "synthetic": True}
+
+
+@app.post("/api/login")
+def login(body: Login):
+    code = body.code.strip().upper()
+    with db() as conn:
+        if code == "ACAPS-DEMO":
+            role, exp = "moderator", None
+        else:
+            row = conn.execute("SELECT id FROM experts WHERE invite_code=?", (code,)).fetchone()
+            if not row:
+                raise HTTPException(401, "Invalid demo invitation code")
+            role, exp = "expert", row["id"]
+        token = secrets.token_urlsafe(32)
+        conn.execute("INSERT INTO sessions(token,role,expert_id,created_at) VALUES(?,?,?,?)", (token,role,exp,now()))
+        return {"token": token, "role": role, "expert_id": exp, "synthetic": True}
+
+
+@app.get("/api/me")
+def me(auth=Depends(session)):
+    with db() as conn:
+        result = {**auth, "demo_mode": True}
+        if auth["role"] == "expert":
+            resp = conn.execute("SELECT agreement,probability,confidence,anonymity,created_at FROM submissions WHERE expert_id=?", (auth["expert_id"],)).fetchone()
+            rev = conn.execute("SELECT probability,created_at FROM revisions WHERE expert_id=?", (auth["expert_id"],)).fetchone()
+            result.update({"submission": dict(resp) if resp else None,
+                           "revision": dict(rev) if rev else None,
+                           "feedback_released": config(conn, "feedback_released") == "true"})
+        return result
+
+
+@app.post("/api/expert/submit")
+def submit(body: Contribution, auth=Depends(require_expert)):
+    with db() as conn:
+        existing = conn.execute("SELECT 1 FROM submissions WHERE expert_id=?", (auth["expert_id"],)).fetchone()
+        if existing:
+            raise HTTPException(409, "Initial response already recorded. Use revision after feedback release.")
+        if config(conn,"feedback_released") == "true":
+            raise HTTPException(409, "First round is closed")
+        conn.execute("INSERT INTO submissions(expert_id,agreement,probability,confidence,note,anonymity,created_at) VALUES(?,?,?,?,?,?,?)",
+                     (auth["expert_id"],body.agreement,body.probability,body.confidence,body.note.strip(),body.anonymity,now()))
+        return {"saved": True, "next": "Moderator releases anonymous results when the panel is complete"}
+
+
+@app.get("/api/expert/feedback")
+def feedback(auth=Depends(require_expert)):
+    with db() as conn:
+        submitted = conn.execute("SELECT 1 FROM submissions WHERE expert_id=?",(auth["expert_id"],)).fetchone()
+        if not submitted:
+            raise HTTPException(403, "Make your independent contribution before viewing feedback")
+        if config(conn,"feedback_released") != "true":
+            return {"available": False, "reason": "Feedback not yet released by the moderator"}
+        group = compute_group(conn)
+        if not group["ready"]:
+            return {"available": False, "reason": "Insufficient panel size"}
+        # Peer-facing feedback is deliberately less detailed than the moderator view.
+        # Never expose a single second-round forecast or an isolated theme in a tiny panel.
+        group["theme_counts"] = {k: v for k, v in group["theme_counts"].items() if v >= 2}
+        if group["round_two_count"] < len(EXPERTS):
+            group["round_two_count"] = 0
+            group["round_two_median"] = None
+        return {"available": True, "group": group}
+
+
+@app.post("/api/expert/revise")
+def revise(body: Revision, auth=Depends(require_expert)):
+    with db() as conn:
+        if config(conn,"feedback_released") != "true" or not compute_group(conn)["ready"]:
+            raise HTTPException(409, "Group feedback not yet available")
+        if not conn.execute("SELECT 1 FROM submissions WHERE expert_id=?",(auth["expert_id"],)).fetchone():
+            raise HTTPException(403, "Original contribution required")
+        if conn.execute("SELECT 1 FROM revisions WHERE expert_id=?", (auth["expert_id"],)).fetchone():
+            raise HTTPException(409, "One revision per expert in demo")
+        conn.execute("INSERT INTO revisions(expert_id,probability,created_at) VALUES(?,?,?)",(auth["expert_id"],body.probability,now()))
+        return {"saved": True}
+
+
+@app.get("/api/moderator/dashboard")
+def moderator_dashboard(auth=Depends(require_moderator)):
+    with db() as conn:
+        group=compute_group(conn)
+        return {"group":group, "feedback_released":config(conn,"feedback_released")=="true",
+                "public_approved":config(conn,"public_approved")=="true",
+                "can_release":group["ready"] and config(conn,"feedback_released")!="true",
+                "can_publish":group["ready"] and config(conn,"feedback_released")=="true" and config(conn,"public_approved")!="true",
+                "warning":"Moderator sees aggregated synthetic data only; no individual identities or raw notes are exposed by this endpoint."}
+
+
+@app.post("/api/moderator/release")
+def release(auth=Depends(require_moderator)):
+    with db() as conn:
+        if not compute_group(conn)["ready"]:
+            raise HTTPException(409, "All 5 demo experts must respond before release")
+        set_config(conn,"feedback_released","true")
+        return {"released":True}
+
+
+@app.post("/api/moderator/publish")
+def publish(auth=Depends(require_moderator)):
+    with db() as conn:
+        if not compute_group(conn)["ready"] or config(conn,"feedback_released")!="true":
+            raise HTTPException(409,"Complete panel and release feedback before approving an aggregate")
+        set_config(conn,"public_approved","true")
+        return {"approved":True, "message":"Synthetic group-level insights only; not an official ACAPS publication"}
+
+
+@app.get("/api/public-summary")
+def public_summary():
+    with db() as conn:
+        if config(conn,"public_approved")!="true" or not compute_group(conn)["ready"]:
+            return {"available":False, "reason":"No moderator-approved aggregate available"}
+        group=compute_group(conn)
+        # Intentionally only high-level figures, no quotes, small cohorts, individual data or locations.
+        return {"available":True,"risk_id":"R1043","panel_size":group["count"],
+                "median_probability":group["median"], "notice":"Synthetic demonstration; not an official ACAPS assessment."}
+
+
+@app.post("/api/demo/reset")
+def reset(auth=Depends(require_moderator)):
+    with db() as conn:
+        conn.execute("DELETE FROM revisions")
+        conn.execute("DELETE FROM submissions")
+        conn.execute("DELETE FROM sessions")
+        set_config(conn,"feedback_released","false")
+        set_config(conn,"public_approved","false")
+        for e in SYNTHETIC_RESPONSES:
+            conn.execute("INSERT INTO submissions(expert_id,agreement,probability,confidence,note,anonymity,created_at) VALUES(?,?,?,?,?,?,?)",(*e,now()))
+    return {"reset":True,"message":"Synthetic demo restored to 4 of 5 responses. Login again."}
+
+
+@app.post("/api/scoring/brier")
+def brier_score(body: ScoreRequest):
+    p=body.probability/100.0
+    return {"probability":body.probability,"observed_outcome":body.outcome,
+            "brier_score":round((p-body.outcome)**2,4),
+            "interpretation":"Lower is better (0 = perfect, 1 = maximally wrong). Illustration only; not a measured expert track record."}
+
+
+initialize()

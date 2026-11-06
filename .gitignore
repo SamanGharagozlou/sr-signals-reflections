@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+signal_demo.db
+signal_demo.db-*
+.env
+.DS_Store

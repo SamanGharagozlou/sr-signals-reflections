@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { AppHeader, ErrorState, Loading, RiskEvidence } from "@/components/signal/ui";
 import { SeverityIndexCard } from "@/components/signal/severity-index-card";
+import { InformCrisisContext } from "@/components/signal/inform-crisis-context";
 import { api, useApi } from "@/lib/api/client";
 import type { RiskDetail, RiskInventoryEntry } from "@/lib/api/types";
 import { COUNTRY_OUTLINES, WORLD_MAP_VIEWBOX } from "@/lib/geo/country-paths";
@@ -217,6 +218,7 @@ function RiskDetailPanel({risk}:{risk:RiskInventoryEntry}){
     {detail.status==="error" && <p className="py-3 text-sm text-[#b53d52]">Source context unavailable: {detail.error.message}</p>}
     {detail.status==="ok" && <SourceDetail details={detail.data}/>}
     <SeverityIndexCard riskId={risk.id} />
+    <InformCrisisContext country={risk.country} />
     {risk.id === "R1043" ? <div className="gt-risk-open"><div className="mb-3 flex items-center gap-2"><Check size={16}/><span>Working synthetic consultation available</span></div><button type="button" disabled={opening!==null} onClick={()=>openDemo("expert")}>{opening==="expert"?"Opening…":"Open R1043 expert round"}<ArrowRight size={17} aria-hidden/></button><button type="button" className="secondary" disabled={opening!==null} onClick={()=>openDemo("moderator")}>{opening==="moderator"?"Opening…":"Review as moderator"}<ArrowUpRight size={16} aria-hidden/></button></div> : <p className="gt-no-round"><ClipboardCheck size={16} aria-hidden/> No expert consultation configured for {risk.id}. Source record only; SIGNAL does not fabricate forecasts.</p>}
   </section>;
 }

@@ -86,6 +86,31 @@ export type SeverityIndex =
       dimensions: Record<"impact" | "conditions" | "complexity", number | null>;
       methodology_url: string; score_scale: string };
 
+/** Current crisis scores in a country; NOT matched to a selected ACAPS Risk Radar risk. */
+export interface InformCrisisObservation {
+  crisis_id: string;
+  crisis_name: string;
+  score: number;
+  level: string;
+  trend: string;
+  reliability: string;
+  last_updated: string;
+  dimensions: { impact: number; conditions: number; complexity: number };
+  geographic_scope: string | null;
+  subnational_areas: string[];
+  source_row: number | null;
+}
+export interface InformCountryCrisisContext {
+  available: boolean;
+  country: string;
+  release: string | null;
+  release_date: string | null;
+  source_url: string;
+  crises: InformCrisisObservation[];
+  note: string;
+  reason?: string;
+}
+
 export interface ForecastQuestion {
   text: string;
   resolutionDate: string;
@@ -238,6 +263,7 @@ export interface SignalApi {
   getRiskInventory(): Promise<RiskInventory>;
   getRiskDetail(riskId: string): Promise<RiskDetail>;
   getSeverityIndex(riskId: string): Promise<SeverityIndex>;
+  getInformCountryCrisisContext(country: string): Promise<InformCountryCrisisContext>;
   getConsultation(): Promise<Consultation>;
   login(role: DemoRole): Promise<{ role: DemoRole }>;
   me(): Promise<{ role: DemoRole | null }>;

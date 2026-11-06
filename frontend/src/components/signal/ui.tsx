@@ -20,6 +20,7 @@ export function AppHeader({ section }: { section?: string }) {
           </span>
         </Link>
         <div className="flex items-center gap-3">
+          <Link to="/explore" className="gt-header-explore">Risk Explorer <span aria-hidden>↗</span></Link>
           <span className="hidden text-[10px] font-semibold tracking-[0.18em] text-white/55 uppercase md:inline">Expert insight · human decision</span>
           {section && <span className="gt-role-chip">{section}</span>}
         </div>

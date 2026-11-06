@@ -385,7 +385,9 @@ def health():
 def risks():
     records, origin = get_risks()
     return {"count": len(records), "source": origin, "risks": [
-        {"id": r.get("Risk ID"), "title": r.get("Risk Title"), "country": r.get("Country"), "level": r.get("Risk Level")}
+        {"id": r.get("Risk ID"), "title": r.get("Risk Title"), "country": r.get("Country"),
+         "level": r.get("Risk Level"), "status": r.get("Status"), "trend": r.get("Risk trend"),
+         "probability_category": r.get("Probability"), "impact": r.get("Impact")}
         for r in records]}
 
 

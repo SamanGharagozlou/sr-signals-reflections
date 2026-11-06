@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, ClipboardList, LayoutDashboard, Globe } from "lucide-react";
 import { AppHeader } from "@/components/signal/ui";
 import { api } from "@/lib/api/client";
@@ -38,6 +38,7 @@ function Index() {
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">
             Independent expert calls. Transparent disagreement. Human-approved humanitarian risk insight.
           </p>
+          <Link to="/explore" className="gt-explore-hero-cta">Explore the Risk Radar <ArrowRight size={18} aria-hidden/></Link>
           <div className="gt-home-stages" aria-label="How SIGNAL works">
             <span><strong>01</strong> Brief</span>
             <span><strong>02</strong> Forecast</span>

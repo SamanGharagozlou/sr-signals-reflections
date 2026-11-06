@@ -3,9 +3,10 @@ import { useState } from "react";
 import { ClipboardList, ExternalLink, Link2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AppHeader, ConfirmAction, DeniedState, ErrorState, Loading, RiskSummary, StatePanel } from "@/components/signal/ui";
+import { AgreementVisual, ForecastVisuals } from "@/components/signal/forecast-visuals";
 import { Button } from "@/components/ui/button";
 import { api, useApi } from "@/lib/api/client";
-import type { ModeratorDashboard, ModeratorRiskContext, PanelStats, RiskAssessment, RiskSourceReference } from "@/lib/api/types";
+import type { ModeratorDashboard, ModeratorRiskContext, PanelStats, RiskSourceReference } from "@/lib/api/types";
 
 export const Route = createFileRoute("/moderator")({
   head: () => ({
@@ -73,11 +74,12 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
             </div>
           </div>
 
-          {!d.firstRound ? (
-            <p className="mt-6 text-muted-foreground">No forecasts yet.</p>
-          ) : (
+          <ForecastVisuals first={d.firstRound} second={d.secondRound} revisers={d.revisersCount} />
+          {d.firstRound && (
             <>
-              <div className="mt-6 overflow-x-auto">
+              <details className="mt-6 rounded-lg border bg-background px-4 py-3">
+                <summary className="cursor-pointer text-sm font-semibold text-heading">Detailed statistical table (methodology)</summary>
+                <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
                   <caption className="sr-only">Panel statistics by round</caption>
                   <thead><tr className="border-b text-left text-muted-foreground">
@@ -90,15 +92,12 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
                   </tbody>
                 </table>
               </div>
-              {d.secondRound && (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Same panel in both rounds: {d.revisersCount} of {d.secondRound.n} revised; non-revisers' first-round forecasts are carried forward.
-                </p>
-              )}
-              <div className="mt-6 grid gap-6 md:grid-cols-2">
-                <p className="rounded-md bg-muted p-4 text-sm text-muted-foreground">Individual forecast points are intentionally withheld by the real backend. The statistics above describe the panel only.</p>
-                {d.secondRound && <p className="rounded-md bg-muted p-4 text-sm text-muted-foreground">Second-round values are summarized without exposing individual estimates.</p>}
-              </div>
+                {d.secondRound && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Same panel in both rounds: {d.revisersCount} of {d.secondRound.n} revised; non-revisers' first-round forecasts are carried forward.
+                  </p>
+                )}
+              </details>
               <p className="mt-5 rounded-md bg-amber-soft p-3 text-sm text-amber-foreground">
                 With {d.firstRound.n} experts these figures describe a small panel's views. They are not a calibrated crisis prediction and do not replace the ACAPS qualitative rating.
               </p>
@@ -106,10 +105,7 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
           )}
         </section>
 
-        <section className="rounded-lg border bg-card p-5">
-          <h2 className="text-lg font-semibold">Is the ACAPS rating…</h2>
-          <Agreement a={d.agreement} />
-        </section>
+        <AgreementVisual agreement={d.agreement} />
 
         <ModeratorEvidenceSynthesis />
         <ModeratorReflectionPrompt />
@@ -445,22 +441,6 @@ function StatRow({ label, s }: { label: string; s: PanelStats }) {
       <td className="py-2 pr-4">{s.mad == null ? "N/A" : fmt(s.mad)}</td>
       <td className="py-2 pr-4">{s.min}–{s.max}%</td>
     </tr>
-  );
-}
-
-function Agreement({ a }: { a: Record<RiskAssessment, number> }) {
-  const total = Object.values(a).reduce((x, y) => x + y, 0) || 1;
-  const rows: [RiskAssessment, string][] = [["underestimated", "Underestimated"], ["about_right", "About right"], ["overestimated", "Overestimated"]];
-  return (
-    <ul className="mt-3 space-y-2">
-      {rows.map(([k, l]) => (
-        <li key={k} className="grid grid-cols-[120px_1fr_40px] items-center gap-3 text-sm">
-          <span>{l}</span>
-          <span className="h-2.5 rounded-full bg-muted"><span className="block h-full rounded-full bg-teal" style={{ width: `${(a[k] / total) * 100}%` }} /></span>
-          <span className="text-right font-medium text-heading">{a[k]}</span>
-        </li>
-      ))}
-    </ul>
   );
 }
 

@@ -78,6 +78,14 @@ export interface RiskDetail {
   sources: string;
 }
 
+/** INFORM Severity is a crisis-level current-conditions index, separate from Risk Radar and Delphi forecasts. */
+export type SeverityIndex =
+  | { available: false; metric: string; reason: string; methodology_url: string; score_scale: string }
+  | { available: true; metric: string; risk_id: string; country: string; crisis_id: string; crisis_name: string;
+      score: number; level: string; release: string; source_url: string; match_note: string;
+      dimensions: Record<"impact" | "conditions" | "complexity", number | null>;
+      methodology_url: string; score_scale: string };
+
 export interface ForecastQuestion {
   text: string;
   resolutionDate: string;
@@ -228,6 +236,7 @@ export interface PublicSummary {
 export interface SignalApi {
   getRiskInventory(): Promise<RiskInventory>;
   getRiskDetail(riskId: string): Promise<RiskDetail>;
+  getSeverityIndex(riskId: string): Promise<SeverityIndex>;
   getConsultation(): Promise<Consultation>;
   login(role: DemoRole): Promise<{ role: DemoRole }>;
   me(): Promise<{ role: DemoRole | null }>;

@@ -104,6 +104,7 @@ const consultation = () => ({
 export const mockAdapter: SignalApi = {
   getRiskInventory: () => delay({ count: 1, source: "mock synthetic R1043", risks: [{ id: RISK_R1043.id, title: RISK_R1043.title, country: "Chad", level: RISK_R1043.acapsRiskLevel, status: "Active" }] }),
   getRiskDetail: () => delay({ id: RISK_R1043.id, title: RISK_R1043.title, country: "Chad", risk_level: RISK_R1043.acapsRiskLevel, status: "Active", probability_category: RISK_R1043.acapsProbability, impact: RISK_R1043.acapsImpact, trend: "Unknown", exposure: RISK_R1043.expectedExposure, triggers: RISK_R1043.synopsis, sources: RISK_R1043.source }),
+  getSeverityIndex: () => delay({ available: false as const, metric: "INFORM Severity Index", reason: "No crisis-matched official source in browser mock.", methodology_url: "https://drmkc.jrc.ec.europa.eu/inform-index/INFORM-Severity/Results-and-data", score_scale: "0–10 (methodology updated February 2026)" }),
   getConsultation: () => delay(consultation()),
   async login(role) { state.role = role; emit(); return delay({ role }); },
   me: () => delay({ role: state.role }),

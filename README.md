@@ -18,6 +18,37 @@ Open **http://127.0.0.1:8765** (Swagger docs: **http://127.0.0.1:8765/docs**).
 
 **No Node.js, Lovable, cloud account, API key, or LLM are required.**
 
+## Phase 2A: statistically valid panel comparisons
+
+The moderator's **round-two median** now describes the entire original panel:
+experts who revise use their updated estimate; experts who do not revise keep
+(their previously recorded) initial estimate. It is **not** the median of the
+subset who happened to revise. The API also reports IQR (inclusive quartiles),
+median absolute deviation (MAD), and the change in panel median in percentage
+points, without making inferential claims about the population.
+
+When fewer than all five experts have revised, the peer-facing API suppresses
+second-round numerical details to avoid revealing early individual revisions.
+This patch does **not** implement production anonymity: small-panel privacy,
+role policies, output snapshots, and deployment security need further work.
+
+Run statistical and workflow tests:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+## Phase 2B: privacy-limited access and publication
+
+- Demo bearer sessions expire after **8 hours**; sessions remain local-only and use publicly known synthetic login codes. This is **not secure authentication** and must never be used with real contributors.
+- Expert-facing Delphi feedback now returns only a **coarse 20-point-wide median probability band**, participation size, and a broad agreement message. It never returns exact forecasts, counts by opinion, raw comments, themes, or incremental round-two statistics. Small panels still carry re-identification risks.
+- A moderator gets the original detailed group statistics (still no individually linked notes or names through the dashboard endpoint).
+- After approval, the public API serves a **frozen, minimal snapshot**. Late revisions cannot silently change a previously approved publication. The snapshot is cleared on demo reset.
+- API responses are flagged `Cache-Control: no-store`. A prior demo database approved without a snapshot fails closed until a new approval.
+- **Known limitation:** the selected anonymity preference is stored but not sufficient for production-grade privacy. A real deployment needs independent security design, protected invitations, key rotation, consent, retention policies, and professional threat modeling.
+
+Run `python -m unittest discover -s tests -v` after installing dependencies. Keep the server bound to `127.0.0.1`; **do not expose this prototype to the public Internet**.
+
 ## Exact live demo sequence
 
 1. Open app. Read official ACAPS risk **R1043** (Chad, high risk, active).

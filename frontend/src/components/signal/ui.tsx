@@ -29,7 +29,7 @@ export function AppHeader({ section }: { section?: string }) {
     <header className="sr-masthead">
       <div className="sr-nav-top">
         <Link to="/" className="sr-logo" aria-label="S and R home">S&amp;R</Link>
-        <span className="sr-brand-sub">Signals &amp; Reflection</span>
+        <span className="sr-brand-sub">Signals &amp; Reflections</span>
         <nav aria-label="Main navigation" className="sr-global-links">
           {mainNav.map(l => <Link key={l.to} to={l.to} aria-current={l.active ? "page" : undefined}>{l.label}</Link>)}
         </nav>

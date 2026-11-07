@@ -6,9 +6,9 @@ import { api } from "@/lib/api/client";
 
 export const Route = createFileRoute("/")({
   head:()=>({meta:[
-    {title:"S&R | Signals & Reflection"},
+    {title:"S&R | Signals & Reflections"},
     {name:"description",content:"S&R is a moderator-first humanitarian expert consultation, scenario exploration and privacy-safe reporting prototype."},
-    {property:"og:title",content:"S&R — Signals & Reflection"},
+    {property:"og:title",content:"S&R — Signals & Reflections"},
   ]}),
   component:Home,
 });
@@ -26,7 +26,7 @@ function Home() {
     <AppHeader section="Synthetic demo"/>
     <main className="sr-home">
       <div className="sr-home-hero">
-        <div><p className="sr-kicker">SIGNALS & REFLECTION / GROUND TRUTH</p>
+        <div><p className="sr-kicker">SIGNALS & REFLECTIONS / GROUND TRUTH</p>
           <h1>From local signals to <em>shared understanding.</em></h1>
           <p>Experts contribute independent judgment. Analysts review what changed and explore scenarios. Moderators approve the information partners can safely use.</p>
           <div className="sr-home-actions"><button className="sr-primary" onClick={enter} disabled={busy}><ClipboardList size={18}/>{busy?"Opening expert demo…":"Start expert contribution"}<ArrowRight size={17}/></button><Link className="sr-tertiary" to="/situation-room"><MapPinned size={17}/> Open situation room</Link></div>

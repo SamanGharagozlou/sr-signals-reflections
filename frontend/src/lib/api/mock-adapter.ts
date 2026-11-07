@@ -102,6 +102,7 @@ const consultation = () => ({
 });
 
 export const mockAdapter: SignalApi = {
+  async getSituationRoomAnalyst() { throw new ApiError(403, "Analyst situation room requires the real moderator-gated FastAPI endpoint."); },
   getRiskInventory: () => delay({ count: 1, source: "mock synthetic R1043", risks: [{ id: RISK_R1043.id, title: RISK_R1043.title, country: "Chad", level: RISK_R1043.acapsRiskLevel, status: "Active" }] }),
   getRiskDetail: () => delay({ id: RISK_R1043.id, title: RISK_R1043.title, country: "Chad", risk_level: RISK_R1043.acapsRiskLevel, status: "Active", probability_category: RISK_R1043.acapsProbability, impact: RISK_R1043.acapsImpact, trend: "Unknown", exposure: RISK_R1043.expectedExposure, triggers: RISK_R1043.synopsis, sources: RISK_R1043.source }),
   getSeverityIndex: () => delay({ available: false as const, metric: "INFORM Severity Index", reason: "No crisis-matched official source in browser mock.", methodology_url: "https://drmkc.jrc.ec.europa.eu/inform-index/INFORM-Severity/Results-and-data", score_scale: "0–10 (methodology updated February 2026)" }),
@@ -154,6 +155,17 @@ export const mockAdapter: SignalApi = {
     return delay(r, 400);
   },
 
+  getEvidenceReviewQueue: () => {
+    requireRole("moderator");
+    return delay({ available: false, source: "Browser-only synthetic mock", total_records: 1, items: [],
+      reason: "Source-field review requires the local FastAPI Risk Radar dataset.",
+      methodology: "Missing-field prompts are not verified evidence.",
+      summary: { open_flags: 0, triaged_flags: 0, flagged_records: 0, review_first_records: 0, by_rule: {} } });
+  },
+  async triageEvidenceFlag() {
+    requireRole("moderator");
+    throw new ApiError(409, "Evidence triage requires the local FastAPI service.");
+  },
   async getModeratorDashboard() {
     requireRole("moderator");
     const p = panel();

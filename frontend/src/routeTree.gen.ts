@@ -15,8 +15,10 @@ import { Route as ExpertRouteImport } from './routes/expert'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as MethodRouteImport } from './routes/method'
 import { Route as ModeratorRouteImport } from './routes/moderator'
+import { Route as OutlookRouteImport } from './routes/outlook'
 import { Route as PublicRouteImport } from './routes/public'
 import { Route as RiskIndexRouteImport } from './routes/risk-index'
+import { Route as SituationRoomRouteImport } from './routes/situation-room'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -48,6 +50,11 @@ const ModeratorRoute = ModeratorRouteImport.update({
   path: '/moderator',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OutlookRoute = OutlookRouteImport.update({
+  id: '/outlook',
+  path: '/outlook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PublicRoute = PublicRouteImport.update({
   id: '/public',
   path: '/public',
@@ -58,6 +65,11 @@ const RiskIndexRoute = RiskIndexRouteImport.update({
   path: '/risk-index',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SituationRoomRoute = SituationRoomRouteImport.update({
+  id: '/situation-room',
+  path: '/situation-room',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -66,8 +78,10 @@ export interface FileRoutesByFullPath {
   '/explore': typeof ExploreRoute
   '/method': typeof MethodRoute
   '/moderator': typeof ModeratorRoute
+  '/outlook': typeof OutlookRoute
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
+  '/situation-room': typeof SituationRoomRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -76,8 +90,10 @@ export interface FileRoutesByTo {
   '/explore': typeof ExploreRoute
   '/method': typeof MethodRoute
   '/moderator': typeof ModeratorRoute
+  '/outlook': typeof OutlookRoute
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
+  '/situation-room': typeof SituationRoomRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -87,8 +103,10 @@ export interface FileRoutesById {
   '/explore': typeof ExploreRoute
   '/method': typeof MethodRoute
   '/moderator': typeof ModeratorRoute
+  '/outlook': typeof OutlookRoute
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
+  '/situation-room': typeof SituationRoomRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -99,8 +117,10 @@ export interface FileRouteTypes {
     | '/explore'
     | '/method'
     | '/moderator'
+    | '/outlook'
     | '/public'
     | '/risk-index'
+    | '/situation-room'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -109,8 +129,10 @@ export interface FileRouteTypes {
     | '/explore'
     | '/method'
     | '/moderator'
+    | '/outlook'
     | '/public'
     | '/risk-index'
+    | '/situation-room'
   id:
     | '__root__'
     | '/'
@@ -119,8 +141,10 @@ export interface FileRouteTypes {
     | '/explore'
     | '/method'
     | '/moderator'
+    | '/outlook'
     | '/public'
     | '/risk-index'
+    | '/situation-room'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -130,8 +154,10 @@ export interface RootRouteChildren {
   ExploreRoute: typeof ExploreRoute
   MethodRoute: typeof MethodRoute
   ModeratorRoute: typeof ModeratorRoute
+  OutlookRoute: typeof OutlookRoute
   PublicRoute: typeof PublicRoute
   RiskIndexRoute: typeof RiskIndexRoute
+  SituationRoomRoute: typeof SituationRoomRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -178,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ModeratorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/outlook': {
+      id: '/outlook'
+      path: '/outlook'
+      fullPath: '/outlook'
+      preLoaderRoute: typeof OutlookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/public': {
       id: '/public'
       path: '/public'
@@ -192,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RiskIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/situation-room': {
+      id: '/situation-room'
+      path: '/situation-room'
+      fullPath: '/situation-room'
+      preLoaderRoute: typeof SituationRoomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -202,8 +242,10 @@ const rootRouteChildren: RootRouteChildren = {
   ExploreRoute: ExploreRoute,
   MethodRoute: MethodRoute,
   ModeratorRoute: ModeratorRoute,
+  OutlookRoute: OutlookRoute,
   PublicRoute: PublicRoute,
   RiskIndexRoute: RiskIndexRoute,
+  SituationRoomRoute: SituationRoomRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

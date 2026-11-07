@@ -52,3 +52,29 @@ cd .. && git diff --check
 ```
 
 Then execute the link and photo browser journey, verify the image is private, and check the Share route still contains no source-level data.
+
+
+## Phase 14 — Clarifications and evidence reflection
+
+S&R now offers **Reflect on source evidence** (below Add a Source inside Contribute): an expert can view their own `EV-` evidence receipts and the latest analyst decision. When a moderator selects **Request corroboration**, a specific note is mandatory; the contributor can submit a fictional clarification.
+
+- The original `sr_source_intake` row is never overwritten by clarifications. Its status returns to `pending_review`, its version increases, and the new note and prior analyst request are stored as an append-only `sr_source_followup` row.
+- A moderator sees the clarification history in a private expandable panel and can choose another review decision. The API guards stale versions with HTTP 409 and enforces record ownership.
+- Follow-ups are **fictional text only**; if the contributor needs to attach a new synthetic link or photo, create a separate evidence record with its own ID. There is no automatic risk-score, scenario, Delphi forecast, or public brief update.
+- Existing source and photo records persist; migration uses `CREATE TABLE IF NOT EXISTS` and does not delete data. Do not reset the existing SQLite database.
+
+### Demonstration
+
+1. Contribute: sign in as a fictional expert and submit an `EV-` source (or use an existing one).
+2. Analyse / Moderator Workspace: choose **Request corroboration** and type “Please clarify how this arrival count was estimated.”
+3. Contribute (same expert): expand **Reflect on source evidence · My evidence**, click Refresh, and find that `EV-` record. Read the request, add a fictional follow-up, affirm privacy and submit.
+4. Analyse / Moderator Workspace: Refresh, expand **Contributor follow-ups** for the record, compare it with the original, then accept for illustrative analysis or request further clarification.
+5. Continue the existing five-expert Delphi Reflect → scenario simulation → approved public summary. Evidence follow-up does not automatically change the forecast.
+
+### Protected endpoints
+
+- `GET /api/evidence/{id}/followups` (owner expert only)
+- `POST /api/evidence/{id}/followups` (owner expert only, `needs_more_evidence` status, version check)
+- `GET /api/moderator/source-intake/{id}/followups` (moderator only)
+
+Privacy note: The pattern matcher is not a comprehensive PII filter. Use only synthetic, pre-redacted material. Do not attach actual personal or sensitive data.

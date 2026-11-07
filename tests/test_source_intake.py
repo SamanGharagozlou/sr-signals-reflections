@@ -197,4 +197,90 @@ class MultiSourceTests(unittest.TestCase):
         self.assertEqual(decision.json()['item']['source_type'],'photo')
         self.assertEqual(decision.json()['item']['status'],'needs_more_evidence')
 
+class FollowupWorkflowTests(unittest.TestCase):
+    def setUp(self):
+        self.fixture=EvidenceIntakeTests()
+        self.fixture.setUp()
+        self.client=self.fixture.client
+        self.expert=self.fixture.expert
+        self.moderator=self.fixture.mod
+        self.payload=self.fixture.submit_data
+        self.saved=self.client.post("/api/evidence/submit",headers=self.expert,json=self.payload)
+        assert self.saved.status_code==200,self.saved.text
+
+    def tearDown(self): self.fixture.tearDown()
+
+    def request_more(self):
+        return self.client.post("/api/moderator/source-intake/1/review",headers=self.moderator,
+            json={"decision":"needs_more_evidence","note":"Please clarify how the arrival count was estimated.","expected_version":0})
+
+    def clarification(self, **overrides):
+        body={"message":"Fictional follow-up: the count is an estimate from a two-hour observation.",
+              "expected_version":1,"confirmed_synthetic":True,"confirmed_no_pii":True}
+        body.update(overrides)
+        return self.client.post("/api/evidence/1/followups",headers=self.expert,json=body)
+
+    def test_end_to_end_request_followup_rereview_immutable_original(self):
+        self.assertEqual(self.request_more().status_code,200)
+        more=self.client.get("/api/evidence/mine",headers=self.expert).json()["items"][0]
+        self.assertEqual(more["status"],"needs_more_evidence")
+        self.assertIn("arrival count",more["reviewer_note"])
+        result=self.clarification()
+        self.assertEqual(result.status_code,200,result.text)
+        new=result.json()["item"]
+        self.assertEqual(new["status"],"pending_review")
+        self.assertEqual(new["version"],2)
+        self.assertEqual(new["redacted_text"],self.saved.json()["item"]["redacted_text"])
+        hist=self.client.get("/api/evidence/1/followups",headers=self.expert)
+        self.assertEqual(hist.status_code,200)
+        self.assertEqual(len(hist.json()["items"]),1)
+        self.assertIn("two-hour",hist.json()["items"][0]["redacted_message"])
+        self.assertIn("arrival count",hist.json()["items"][0]["request_note"])
+        self.assertEqual(self.client.get("/api/moderator/source-intake/1/followups",headers=self.moderator).status_code,200)
+        accepted=self.client.post("/api/moderator/source-intake/1/review",headers=self.moderator,json={
+            "decision":"accepted_for_analysis", "note":"Accepted as an illustrative unverified hypothesis", "expected_version":2})
+        self.assertEqual(accepted.status_code,200,accepted.text)
+        self.assertEqual(accepted.json()["item"]["version"],3)
+        self.assertEqual(accepted.json()["item"]["status"],"accepted_for_analysis")
+        self.assertEqual(self.client.get("/api/evidence/1/followups",headers=self.expert).json()["items"][0]["redacted_message"],hist.json()["items"][0]["redacted_message"])
+        with sqlite3.connect(Path(self.fixture.tmp.name)/"test.sqlite") as conn:
+            actions=[x[0] for x in conn.execute("SELECT action FROM sr_source_audit ORDER BY id").fetchall()]
+        self.assertEqual(actions,["submitted","needs_more_evidence","followup_submitted","accepted_for_analysis"])
+
+    def test_auth_ownership_and_ineligible_states(self):
+        self.assertEqual(self.client.get("/api/evidence/1/followups").status_code,401)
+        self.assertEqual(self.client.get("/api/evidence/1/followups",headers=self.moderator).status_code,403)
+        self.assertEqual(self.client.get("/api/moderator/source-intake/1/followups",headers=self.expert).status_code,403)
+        self.assertEqual(self.client.post("/api/evidence/1/followups",headers=self.moderator,json={"message":"Fictional follow-up message", "expected_version":0,"confirmed_synthetic":True,"confirmed_no_pii":True}).status_code,403)
+        self.assertEqual(self.clarification(expected_version=0).status_code,409)
+        self.assertEqual(self.request_more().status_code,200)
+        self.assertEqual(self.clarification().status_code,200)
+        self.assertEqual(self.clarification().status_code,409)
+        self.assertEqual(self.client.get("/api/evidence/999/followups",headers=self.expert).status_code,404)
+        self.assertEqual(self.client.get("/api/moderator/source-intake/999/followups",headers=self.moderator).status_code,404)
+
+    def test_no_followup_without_privacy_confirmations(self):
+        self.assertEqual(self.request_more().status_code,200)
+        for field in ("confirmed_synthetic","confirmed_no_pii"):
+            self.assertEqual(self.clarification(**{field:False}).status_code,422)
+        redacted=self.clarification(message="me@real.example reported from a fictional location")
+        self.assertEqual(redacted.status_code,200)
+        self.assertNotIn("me@real.example",self.client.get("/api/evidence/1/followups",headers=self.expert).text)
+        with sqlite3.connect(Path(self.fixture.tmp.name)/"test.sqlite") as conn:
+            self.assertEqual(conn.execute("SELECT count(*) FROM sr_source_followup").fetchone()[0],1)
+
+    def test_corroboration_request_requires_specific_note(self):
+        no_note=self.client.post("/api/moderator/source-intake/1/review",headers=self.moderator,
+            json={"decision":"needs_more_evidence","note":"","expected_version":0})
+        self.assertEqual(no_note.status_code,400)
+        self.assertEqual(self.client.get("/api/evidence/mine",headers=self.expert).json()["items"][0]["status"],"pending_review")
+
+    def test_followup_cannot_be_sent_by_different_expert(self):
+        self.assertEqual(self.request_more().status_code,200)
+        # Session helper grants only one ID; forge an alternate current owner in the isolated DB.
+        with sqlite3.connect(Path(self.fixture.tmp.name)/"test.sqlite") as conn:
+            conn.execute("UPDATE sr_source_intake SET expert_id=? WHERE id=1",("expert-06",))
+        self.assertEqual(self.clarification().status_code,404)
+        self.assertEqual(self.client.get("/api/evidence/1/followups",headers=self.expert).status_code,404)
+
 if __name__ == "__main__": unittest.main()

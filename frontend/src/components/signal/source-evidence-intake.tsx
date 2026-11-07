@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CheckCircle2, ChevronDown, Mail } from "lucide-react";
 import { sourceEvidenceApi, type EvidencePreview, type EvidenceRecord, type EvidenceSource, type Proximity, type SourceCategory } from "@/lib/source-evidence-api";
+import { MyEvidenceFollowups } from "./source-evidence-followups";
 
 const EXAMPLE = `From: [removed]\nSubject: Fwd: Adré crossing\nOur team counted about 1,200 new arrivals on Tuesday. Most head to Iriba; border sites are full.\nCall me on [removed]`;
 const EXAMPLE_LINK = "https://example.org/synthetic-chad-displacement-report";
@@ -90,7 +91,7 @@ export function SourceEvidenceIntake() {
     } catch(e){setError(e instanceof Error?e.message:"Could not save the source");}
     finally{setBusy(false);}
   };
-  return <section className="mb-5 overflow-hidden rounded-xl border border-[#cddfe5] bg-white shadow-sm" aria-label="Add synthetic source to evidence log">
+  return <><section className="mb-5 overflow-hidden rounded-xl border border-[#cddfe5] bg-white shadow-sm" aria-label="Add synthetic source to evidence log">
     <details open={false}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 bg-[#0e4a68] px-4 py-3 text-white [&::-webkit-details-marker]:hidden">
         <span className="flex items-center gap-2 font-semibold"><Mail size={18}/> Add a source <span className="rounded bg-white/15 px-2 py-0.5 text-[10px] font-medium uppercase">Synthetic demo</span></span><ChevronDown size={18}/>
@@ -158,7 +159,9 @@ export function SourceEvidenceIntake() {
         {error&&<p role="alert" className="rounded bg-red-50 p-2 text-xs text-red-800">{error}</p>}
       </div>
     </details>
-  </section>;
+  </section>
+  <MyEvidenceFollowups refreshAfterSave={saved?.id ?? null}/>
+  </>;
 }
 function Field({label,value,onChange,placeholder,type="text"}:{label:string;value:string;onChange:(v:string)=>void;placeholder?:string;type?:string}){
   return <label className="block text-[11px] font-semibold text-[#194b61]">{label}<input type={type} min={type==="number"?0:undefined} value={value} placeholder={placeholder} onChange={e=>onChange(e.target.value)} className="mt-1 w-full rounded border border-[#cddbe1] bg-white px-2 py-2 text-sm font-normal text-[#173e53]"/></label>;

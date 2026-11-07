@@ -21,6 +21,11 @@ export interface EvidenceRecord {
   redaction_confirmed: boolean; reviewer_note: string; version: number;
   created_at: string; reviewed_at: string | null; has_photo: boolean;
 }
+export interface EvidenceFollowup {
+  id: number; evidence_id: string; source_id: number; expert_id: string;
+  redacted_message: string; request_note: string;
+  previous_version: number; created_at: string;
+}
 export interface EvidenceSubmit {
   source_type: EvidenceSource; source_text: string; risk_id: string;
   reported_place: string; reported_date: string; reported_count: number | null;
@@ -61,6 +66,12 @@ export const sourceEvidenceApi = {
   preview: (input: {source_type: EvidenceSource; source_text: string}) => request<EvidencePreview>("/evidence/preview", "POST", input),
   submit: (input: EvidenceSubmit) => request<{item: EvidenceRecord; notice: string}>("/evidence/submit", "POST", input),
   mine: () => request<{items: EvidenceRecord[]}>("/evidence/mine"),
+  ownFollowups: (id: string) => request<{items: EvidenceFollowup[]}>(`/evidence/${numericId(id)}/followups`),
+  moderatorFollowups: (id: string) => request<{items: EvidenceFollowup[]}>(`/moderator/source-intake/${numericId(id)}/followups`),
+  followup: (id: string, message: string, version: number) =>
+    request<{item: EvidenceRecord; notice: string}>(`/evidence/${numericId(id)}/followups`, "POST", {
+      message, expected_version:version, confirmed_synthetic:true, confirmed_no_pii:true,
+    }),
   inbox: () => request<{items: EvidenceRecord[]; notice: string}>("/moderator/source-intake"),
   review: (id: string, decision: Decision, note: string, version: number) =>
     request<{item: EvidenceRecord}>(`/moderator/source-intake/${numericId(id)}/review`, "POST", {decision, note, expected_version:version}),

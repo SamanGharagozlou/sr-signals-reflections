@@ -199,6 +199,21 @@ class ReviewInput(BaseModel):
     expected_version: int = Field(ge=0)
 
 
+class FollowupInput(BaseModel):
+    """Append-only, fictional clarification. Never overwrite the original claim."""
+    message: str = Field(min_length=15, max_length=1200)
+    expected_version: int = Field(ge=0)
+    confirmed_synthetic: Literal[True]
+    confirmed_no_pii: Literal[True]
+
+
+def followup_view(row) -> dict:
+    x = dict(row)
+    x["evidence_id"] = f"EV-{x['source_id']:04d}"
+    # An immutable follow-up has its own row id; it is not a revised forecast.
+    return x
+
+
 def install_tables(conn) -> None:
     conn.executescript("""
     CREATE TABLE IF NOT EXISTS sr_source_intake (
@@ -231,6 +246,15 @@ def install_tables(conn) -> None:
         source_id INTEGER PRIMARY KEY REFERENCES sr_source_intake(id) ON DELETE CASCADE,
         png_data BLOB NOT NULL,
         sha256 TEXT NOT NULL,
+        created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS sr_source_followup (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        source_id INTEGER NOT NULL REFERENCES sr_source_intake(id),
+        expert_id TEXT NOT NULL,
+        redacted_message TEXT NOT NULL,
+        request_note TEXT NOT NULL,
+        previous_version INTEGER NOT NULL,
         created_at TEXT NOT NULL
     );
     """)
@@ -324,6 +348,70 @@ def create_router(db: Callable, require_expert: Callable, require_moderator: Cal
     def moderator_photo(evidence_id: int, auth=Depends(require_moderator)):
         return get_photo(evidence_id)
 
+    @router.get("/api/evidence/{evidence_id}/followups")
+    def own_followups(evidence_id: int, auth=Depends(require_expert)):
+        """Owner-only clarification history. Moderator correspondence is not public."""
+        if evidence_id <= 0:
+            raise HTTPException(404, "Unknown evidence")
+        with db() as conn:
+            install_tables(conn)
+            row = conn.execute("SELECT id FROM sr_source_intake WHERE id=? AND expert_id=?",
+                               (evidence_id,auth["expert_id"])).fetchone()
+            if row is None:
+                raise HTTPException(404, "Unknown evidence")
+            history = conn.execute("SELECT * FROM sr_source_followup WHERE source_id=? ORDER BY id ASC",
+                                   (evidence_id,)).fetchall()
+            return {"items": [followup_view(x) for x in history]}
+
+    @router.post("/api/evidence/{evidence_id}/followups")
+    def add_followup(evidence_id: int, body: FollowupInput, auth=Depends(require_expert)):
+        """Submit clarification only after a moderator explicitly requests it.
+
+        Preserve the original evidence as written and bump its version to ensure
+        any reviewer holding an old snapshot must refresh before deciding.
+        """
+        if evidence_id <= 0:
+            raise HTTPException(404, "Unknown evidence")
+        cleaned = safe_demo_text(body.message)
+        if len(cleaned) < 15 or "@" in cleaned:
+            raise HTTPException(400, "Use a fictional clarification without personal identifiers")
+        with db() as conn:
+            install_tables(conn)
+            row = conn.execute("SELECT * FROM sr_source_intake WHERE id=? AND expert_id=?",
+                               (evidence_id,auth["expert_id"])).fetchone()
+            if row is None:
+                raise HTTPException(404, "Unknown evidence")
+            if row["version"] != body.expected_version:
+                raise HTTPException(409, "Evidence changed. Refresh before submitting a follow-up")
+            if row["status"] != "needs_more_evidence":
+                raise HTTPException(409, "Follow-up requires an analyst corroboration request")
+            now = timestamp()
+            cur = conn.execute("UPDATE sr_source_intake SET status='pending_review', reviewed_at=NULL, version=version+1 "
+                               "WHERE id=? AND expert_id=? AND version=? AND status='needs_more_evidence'",
+                               (evidence_id,auth["expert_id"],body.expected_version))
+            if cur.rowcount != 1:
+                raise HTTPException(409, "Evidence changed. Refresh before submitting a follow-up")
+            conn.execute("INSERT INTO sr_source_followup "
+                         "(source_id,expert_id,redacted_message,request_note,previous_version,created_at) "
+                         "VALUES(?,?,?,?,?,?)",
+                         (evidence_id,auth["expert_id"],cleaned,row["reviewer_note"],body.expected_version,now))
+            conn.execute("INSERT INTO sr_source_audit(source_id,action,actor,occurred_at) VALUES(?,?,?,?)",
+                         (evidence_id,"followup_submitted",auth["expert_id"],now))
+            updated = conn.execute("SELECT * FROM sr_source_intake WHERE id=?",(evidence_id,)).fetchone()
+            return {"item":to_view(updated), "notice":"Clarification queued for human re-review. Original source is unchanged."}
+
+    @router.get("/api/moderator/source-intake/{evidence_id}/followups")
+    def moderator_followups(evidence_id: int, auth=Depends(require_moderator)):
+        if evidence_id <= 0:
+            raise HTTPException(404, "Unknown evidence")
+        with db() as conn:
+            install_tables(conn)
+            if conn.execute("SELECT 1 FROM sr_source_intake WHERE id=?",(evidence_id,)).fetchone() is None:
+                raise HTTPException(404, "Unknown evidence")
+            history = conn.execute("SELECT * FROM sr_source_followup WHERE source_id=? ORDER BY id ASC",
+                                   (evidence_id,)).fetchall()
+            return {"items": [followup_view(x) for x in history]}
+
     @router.get("/api/moderator/source-intake")
     def moderator_list(auth=Depends(require_moderator)):
         with db() as conn:
@@ -336,6 +424,8 @@ def create_router(db: Callable, require_expert: Callable, require_moderator: Cal
         if evidence_id <= 0:
             raise HTTPException(404, "Unknown evidence")
         note = safe_demo_text(body.note)
+        if body.decision == "needs_more_evidence" and len(note.strip()) < 10:
+            raise HTTPException(400, "Explain what the contributor needs to clarify")
         with db() as conn:
             install_tables(conn)
             row = conn.execute("SELECT * FROM sr_source_intake WHERE id=?",(evidence_id,)).fetchone()

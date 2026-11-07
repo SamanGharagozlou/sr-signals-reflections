@@ -785,4 +785,8 @@ def brier_score(body: ScoreRequest):
             "interpretation":"Lower is better (0 = perfect, 1 = maximally wrong). Illustration only; not a measured expert track record."}
 
 
+# S&R Phase 12: isolated source intake; no automatic forecasts or public release.
+from source_intake import create_router as create_sr_source_router
+app.include_router(create_sr_source_router(db, require_expert, require_moderator, get_risks))
+
 initialize()

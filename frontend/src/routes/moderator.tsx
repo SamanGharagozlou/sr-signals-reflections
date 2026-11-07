@@ -1,3 +1,4 @@
+import { SourceEvidenceInbox } from "@/components/signal/source-evidence-inbox";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { ClipboardList, ExternalLink, Link2, Users } from "lucide-react";
@@ -58,6 +59,7 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
             <div><span>Public snapshot</span><strong>{c.publicSnapshotApproved ? "Approved" : "Pending"}</strong></div>
           </div>
         </section>
+        <SourceEvidenceInbox />
         <ModeratorDecisionBrief consultation={c} />
         <div id="risk-evidence"><RiskSummary risk={c.risk} /></div>
         <ModeratorSourceTrace riskId={c.risk.id} />

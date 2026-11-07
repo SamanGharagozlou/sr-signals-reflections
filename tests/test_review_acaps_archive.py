@@ -2,7 +2,7 @@ import importlib.util
 from pathlib import Path
 import unittest
 
-PATH=Path(__file__).with_name('review_acaps_archive.py')
+PATH=Path(__file__).resolve().parents[1] / 'scripts' / 'review_acaps_archive.py'
 spec=importlib.util.spec_from_file_location('acaps_archive_refresh',PATH)
 module=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)

@@ -25,6 +25,7 @@ from historical_evaluation import summarize_historical_outcomes
 from moderator_synthesis import build_moderator_synthesis
 from severity_index import severity_for_risk
 from inform_crisis_context import crises_for_country
+from evidence_quality import evaluate_records, decorate_review_state
 
 ROOT = Path(__file__).resolve().parent
 DB_PATH = Path(os.environ.get("SIGNAL_DB_PATH", ROOT / "signal_demo.db"))
@@ -153,6 +154,16 @@ def initialize():
           token TEXT PRIMARY KEY, role TEXT NOT NULL,
           expert_id TEXT, created_at TEXT NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS evidence_triage (
+          risk_id TEXT NOT NULL, rule_code TEXT NOT NULL, fingerprint TEXT NOT NULL,
+          disposition TEXT NOT NULL, updated_at TEXT NOT NULL,
+          PRIMARY KEY(risk_id, rule_code)
+        );
+        CREATE TABLE IF NOT EXISTS evidence_triage_events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT, risk_id TEXT NOT NULL,
+          rule_code TEXT NOT NULL, disposition TEXT NOT NULL,
+          fingerprint TEXT NOT NULL, occurred_at TEXT NOT NULL
+        );
         CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
         """)
         for ex in EXPERTS:
@@ -233,6 +244,13 @@ class FollowupApproval(BaseModel):
 
 class CounterpointApproval(BaseModel):
     prompt_id: Literal["attribution", "documentation"]
+
+
+class EvidenceTriageAction(BaseModel):
+    risk_id: str = Field(min_length=1, max_length=100)
+    rule_code: str = Field(min_length=1, max_length=60)
+    fingerprint: str = Field(min_length=24, max_length=24)
+    disposition: Literal["triaged", "open"]
 
 
 class ScoreRequest(BaseModel):
@@ -448,6 +466,44 @@ def moderator_risk_context(risk_id: str, auth=Depends(require_moderator)):
     return build_risk_context(record, origin)
 
 
+@app.get("/api/moderator/evidence-queue")
+def moderator_evidence_queue(auth=Depends(require_moderator)):
+    """Moderator-only, source-grounded review prompts; never a verification verdict."""
+    records, origin = get_risks()
+    queue = evaluate_records(records, origin)
+    with db() as conn:
+        saved = {
+            (r["risk_id"], r["rule_code"]): dict(r)
+            for r in conn.execute("SELECT risk_id,rule_code,fingerprint,disposition,updated_at FROM evidence_triage")
+        }
+    return decorate_review_state(queue, saved)
+
+
+@app.post("/api/moderator/evidence-queue/triage")
+def moderator_triage_evidence(body: EvidenceTriageAction, auth=Depends(require_moderator)):
+    """Record a human triage decision. Never change Risk Radar source fields."""
+    records, origin = get_risks()
+    queue = evaluate_records(records, origin)
+    if not queue["available"]:
+        raise HTTPException(409, "Cannot triage records without the organizer-provided source CSV")
+    current = next((f for item in queue["items"] if item["risk_id"] == body.risk_id
+                    for f in item["flags"] if f["code"] == body.rule_code), None)
+    if current is None or current["fingerprint"] != body.fingerprint:
+        raise HTTPException(409, "Source flag changed or no longer exists; refresh the review queue")
+    timestamp = now()
+    with db() as conn:
+        conn.execute("""INSERT INTO evidence_triage(risk_id,rule_code,fingerprint,disposition,updated_at)
+            VALUES (?,?,?,?,?) ON CONFLICT(risk_id,rule_code) DO UPDATE SET
+            fingerprint=excluded.fingerprint,disposition=excluded.disposition,updated_at=excluded.updated_at""",
+            (body.risk_id, body.rule_code, body.fingerprint, body.disposition, timestamp))
+        conn.execute("""INSERT INTO evidence_triage_events(risk_id,rule_code,disposition,fingerprint,occurred_at)
+            VALUES (?,?,?,?,?)""",
+            (body.risk_id, body.rule_code, body.disposition, body.fingerprint, timestamp))
+    return {"updated": True, "risk_id": body.risk_id, "rule_code": body.rule_code,
+            "disposition": body.disposition,
+            "notice": "Triage state only; no evidence verified and no ACAPS assessment changed."}
+
+
 @app.get("/api/moderator/historical-evaluation")
 def historical_evaluation(auth=Depends(require_moderator)):
     """Descriptive ACAPS historical outcomes; never infer numeric forecast calibration."""
@@ -561,6 +617,49 @@ def moderator_dashboard(auth=Depends(require_moderator)):
                 "can_release":group["ready"] and config(conn,"feedback_released")!="true",
                 "can_publish":group["ready"] and config(conn,"feedback_released")=="true" and config(conn,"public_approved")!="true",
                 "warning":"Moderator sees aggregated synthetic data only; no individual identities or raw notes are exposed by this endpoint."}
+
+
+
+@app.get("/api/moderator/situation-room")
+def moderator_situation_room(auth=Depends(require_moderator)):
+    """Privacy-gated analyst read model for the synthetic R1043 consultation.
+
+    Deliberately returns NO names, expert IDs, free-text contributions,
+    individual forecasts, private coordinates, or estimated province risks.
+    The role check is enforced by the backend, not by a frontend tab.
+    """
+    records, origin = get_risks()
+    record = next((r for r in records if r.get("Risk ID") == "R1043"), R1043)
+    with db() as conn:
+        group = compute_group(conn)
+        released = config(conn, "feedback_released") == "true"
+        approved = config(conn, "public_approved") == "true"
+        snapshot = json.loads(config(conn, "public_snapshot")) if approved and config(conn, "public_snapshot") else None
+    return {
+        "role": "moderator",
+        "synthetic": True,
+        "risk": risk_card(record),
+        "source": origin,
+        "forecast": FORECAST_QUESTION,
+        "source_context": build_risk_context(record, origin),
+        "panel": {
+            "count": group["count"], "expected": group["expected"],
+            "ready": group["ready"], "feedback_released": released,
+            "approved": approved,
+            "round_one_median": group["median"], "round_one_range": group["range"],
+            "revised_panel_median": group["round_two_median"],
+            "revised_panel_range": group["round_two_range"],
+            "revised_count": group["round_two_count"],
+            "median_change_pp": group["median_change_pp"],
+            "agreement": group["agreement"],
+            "approved_band": snapshot.get("forecast_median_band") if snapshot else None,
+            "approved_round": snapshot.get("forecast_round") if snapshot else None,
+        },
+        "notice": (
+            "Moderator-only synthetic aggregates and source references. No raw expert "
+            "notes, precise locations, individual forecasts or ACAPS proprietary model output."
+        ),
+    }
 
 
 @app.get("/api/moderator/synthesis")

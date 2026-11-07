@@ -259,7 +259,74 @@ export interface PublicSummary {
   questionText?: string;
 }
 
+/** Moderator-only, deterministic field-completeness prompts; not verified evidence. */
+export interface EvidenceQualityFlag {
+  code: string;
+  label: string;
+  priority: "review-first" | "review";
+  source_field: string;
+  field_present: boolean;
+  reason: string;
+  suggested_review: string;
+  fingerprint: string;
+  triaged: boolean;
+  triaged_at: string | null;
+}
+export interface EvidenceReviewItem {
+  risk_id: string;
+  source_risk_id_present: boolean;
+  title: string;
+  country: string;
+  status: string;
+  risk_level: string;
+  priority: "review-first" | "review";
+  flags: EvidenceQualityFlag[];
+  open_flags: number;
+}
+export interface EvidenceReviewQueue {
+  available: boolean;
+  source: string;
+  total_records: number;
+  items: EvidenceReviewItem[];
+  reason?: string | null;
+  methodology: string;
+  summary: {
+    open_flags: number;
+    triaged_flags: number;
+    flagged_records: number;
+    review_first_records: number;
+    by_rule: Record<string, number>;
+  };
+}
+export interface EvidenceTriageInput {
+  risk_id: string;
+  rule_code: string;
+  fingerprint: string;
+  disposition: "triaged" | "open";
+}
+
+/** Moderator-only read model. No expert-level records or notes are included. */
+export interface SituationRoomAnalyst {
+  role: "moderator";
+  synthetic: true;
+  risk: RiskDetail;
+  source: string;
+  forecast: { question: string; deadline: string; resolution: string; status: string };
+  source_context: ModeratorRiskContext;
+  panel: {
+    count: number; expected: number; ready: boolean;
+    feedback_released: boolean; approved: boolean;
+    round_one_median: number | null; round_one_range: number[];
+    revised_panel_median: number | null; revised_panel_range: number[];
+    revised_count: number; median_change_pp: number | null;
+    agreement: Record<RiskAssessment, number>;
+    approved_band: string | null; approved_round: "initial_panel" | "revised_panel" | null;
+  };
+  notice: string;
+}
+
 export interface SignalApi {
+  getSituationRoomAnalyst(): Promise<SituationRoomAnalyst>;
   getRiskInventory(): Promise<RiskInventory>;
   getRiskDetail(riskId: string): Promise<RiskDetail>;
   getSeverityIndex(riskId: string): Promise<SeverityIndex>;
@@ -272,6 +339,8 @@ export interface SignalApi {
   getExpertFeedback(): Promise<ExpertFeedback>;
   reviseExpert(probability: number): Promise<ExpertReceipt>;
   getModeratorDashboard(): Promise<ModeratorDashboard>;
+  getEvidenceReviewQueue(): Promise<EvidenceReviewQueue>;
+  triageEvidenceFlag(input: EvidenceTriageInput): Promise<void>;
   getModeratorRiskContext(riskId: string): Promise<ModeratorRiskContext>;
   getHistoricalEvaluation(): Promise<HistoricalEvaluation>;
   getModeratorSynthesis(): Promise<ModeratorSynthesis>;

@@ -1206,3 +1206,13 @@ h1, h2, h3, .gt-brand, .gt-display, .gt-editorial-heading,
 .sr-15e-share-nav button[aria-pressed="true"]{border-bottom-color:#0694ad;color:#0b5e7b;}
 @media(max-width:970px){.sr-15e-layout{grid-template-columns:220px minmax(0,1fr);padding:16px;}.sr-15e-case-summary{grid-template-columns:45px minmax(0,1fr);}.sr-15e-actions{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);}.sr-15e-cards.is-grid{grid-template-columns:1fr;}}
 @media(max-width:650px){.sr-15e-layout{display:block;}.sr-15e-sidebar{position:static;margin-bottom:15px;}.sr-15e-case-summary{padding:12px 8px;gap:8px;}.sr-15e-steps{grid-template-columns:repeat(2,1fr);}.sr-15e-disclaimer{font-size:10px;}.sr-15e-expanded{padding:12px;}.sr-15e-case-detail>p{font-size:12px;}}
+
+/* S&R Phase 15F — curated ACAPS source references (not an automatic feed) */
+.sr-15f-source-card{margin:12px 0 10px;padding:12px 14px;border:1px solid #b9d4dc;border-left:4px solid #087e96;border-radius:10px;background:#f2f8fa;color:#153f50}
+.sr-15f-source-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:5px;font-size:10px;font-weight:800;letter-spacing:.075em;text-transform:uppercase;color:#286d80}
+.sr-15f-source-title{display:block;margin:6px 0 4px;color:#073e55;font-weight:750;font-size:14px;line-height:1.35;text-decoration:underline;text-underline-offset:2px}
+.sr-15f-source-title:hover,.sr-15f-source-title:focus-visible{color:#00667c}
+.sr-15f-source-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:11px;color:#4d6372}
+.sr-15f-source-scope{font-size:12px;line-height:1.4;color:#395e6f}
+.sr-15f-note{margin-top:7px;font-size:11px;line-height:1.45;color:#5d6e79}
+@media(max-width:640px){.sr-15f-source-card{padding:11px}}

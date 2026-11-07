@@ -1,5 +1,32 @@
 # SIGNAL — Trusted Expert Ground Truth & Forecasting
 
+<!-- SIGNAL_JURY_START -->
+## For judges — SIGNAL ACAPS at a glance
+
+**SIGNAL ACAPS (Signals & Reflections)** is a hackathon prototype for **ACAPS — Ground Truth for Anticipatory Action**. It connects regional risk exploration, structured six-month expert forecasts, transparent aggregation, and **human-controlled review and publication**.
+
+**Demonstrated flow:** explore a synthetic Ukraine region scenario → inspect its knowledge graph → contribute to a separate synthetic Chad forecast panel → review the panel in a protected moderator workspace → release bounded group feedback → proceed to a **separate, approval-gated** public-intelligence step (final browser approval still to be verified).
+
+| Verification evidence (7 Nov 2026, 20:59 CET) | Result |
+|---|---:|
+| Python backend unit tests | **120 passed** |
+| React/frontend unit tests | **54 passed** across 12 test files |
+| Total automated tests | **174 passed** |
+| Release checks | **10/10 passed**, 0 failures, 0 warnings |
+| Synthetic expert contributions in the demonstrated panel | **5/5** |
+
+The test results are a dated snapshot; **rerun after the final feature merge**. They are *not* a code-coverage percentage, independent security certification, or evidence of real-world forecast accuracy.
+
+**Stack:** Python / FastAPI · React / TypeScript · deterministic statistics and source checking · backend-enforced moderator authorization and publication approval.
+
+**Transparency:** The Ukraine risk scores and regional relationships, Crisis Agenda rankings, and conversational expert-exchange examples are **synthetic**. Curated ACAPS publications are genuine source references, not an automatically refreshed feed. ReliefWeb live report discovery is **not active** because the API requires approved access. We do not claim a verified deployed LLM predicts crises, independently validated six-month forecast accuracy, or an external security audit.
+
+**Reviewer guide:** [Architecture, tests, reproduction steps, data provenance and limitations](docs/JURY_TECHNICAL_VERIFICATION.md).
+
+**Suggested live demo order:** `Ukraine Zoom` → `Expert Contribution` → `Moderator Review` → `Share / Approved Intelligence`. A local running backend and frontend are required; these route names are not public hosted URLs.
+<!-- SIGNAL_JURY_END -->
+
+
 **Working, local-first demo** for **Hackathon for Good #8 — ACAPS Ground Truth**, November 6–8, 2026.
 
 > ⚠️ **Synthetic data only**. This is a hackathon prototype with publicly documented demo invitation codes and simplified access controls. It is **NOT** secure enough for real humanitarian experts, real testimony, production personal data, sensitive field information, or deployment to a public website.

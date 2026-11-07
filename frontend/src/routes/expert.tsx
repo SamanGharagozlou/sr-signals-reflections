@@ -23,6 +23,7 @@ export const Route = createFileRoute("/expert")({
 });
 
 function ExpertPage() {
+  const [section, setSection] = useState<"forecast" | "sources">("forecast");
   const me = useApi(() => api.me());
   const consultation = useApi(() => api.getConsultation());
   let body;
@@ -34,11 +35,36 @@ function ExpertPage() {
       <DeniedState message="The expert consultation is only available in the demo expert role."
         action={<Button className="min-h-11" onClick={async () => { await api.login("expert"); window.location.reload(); }}>Enter as demo expert</Button>} />
     );
-  else body = <><SourceEvidenceIntake /><ExpertGate consultation={consultation.data} /></>;
+  else body = (
+    <section className="sr-contribute-shell">
+      <header className="sr-contribute-head">
+        <p className="sr-kicker">CONTRIBUTE / SYNTHETIC DEMONSTRATION</p>
+        <h1>Expert check-in <em>&amp; reflection</em></h1>
+        <p>Share an independent six-month judgment or add fictional evidence for analyst review.</p>
+      </header>
+      <div className="sr-contribute-switch" role="group" aria-label="Choose contribution workflow">
+        <button type="button" aria-pressed={section === "forecast"} onClick={() => setSection("forecast")}>
+          <span aria-hidden="true">01</span> Expert check-in &amp; reflect
+        </button>
+        <button type="button" aria-pressed={section === "sources"} onClick={() => setSection("sources")}>
+          <span aria-hidden="true">02</span> Add sources &amp; follow-ups
+        </button>
+      </div>
+      {/* Both panels stay mounted so partially completed forms survive tab switches. */}
+      <div className="sr-contribute-content" hidden={section !== "forecast"}>
+        <p className="sr-contribute-hint">After the moderator releases group feedback, return here to see the panel summary and optionally revise your forecast.</p>
+        <ExpertGate consultation={consultation.data} />
+      </div>
+      <div className="sr-contribute-content" hidden={section !== "sources"}>
+        <p className="sr-contribute-hint">Fictional, pre-redacted examples only. Expert sources are reviewed separately from numeric forecasts.</p>
+        <SourceEvidenceIntake />
+      </div>
+    </section>
+  );
   return (
     <div className="min-h-screen">
       <AppHeader section="Expert" />
-      <main className="mx-auto max-w-2xl px-4 py-8">{body}</main>
+      <main className="mx-auto max-w-4xl px-4 py-8">{body}</main>
     </div>
   );
 }

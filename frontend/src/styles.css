@@ -844,3 +844,165 @@ h1, h2, h3 { font-family: var(--sr-font-display); letter-spacing: .005em; }
   .sr-home-hero h1 { font-size: clamp(2.2rem, 9vw, 3rem); }
   .sr-micro-notice { font-size: .69rem; line-height: 1.35; }
 }
+
+/* S&R Phase 15B — Rita's actual slide artwork and cohesive responsive UI.
+   PRESENTATION ONLY: no publication logic, permissions, forecasting or source handling.
+   All backdrop imagery is extracted from the teammate-provided PowerPoint. */
+:root {
+  --sr-navy: #0B4A6F;
+  --sr-navy-deep: #073E60;
+  --sr-teal: #00738C;
+  --sr-teal-bright: #00809C;
+  --sr-aqua: #9FD3E2;
+  --sr-paper: #F6F7F7;
+  --sr-rule: #DDE1E4;
+  --sr-text: #162E39;
+  --sr-font-display: "Oswald", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --sr-font-body: "Roboto Condensed", "Arial Narrow", Arial, sans-serif;
+}
+
+/* Consistent typography and editorial geometry across old and new rooms. */
+body { font-family: var(--sr-font-body); background: var(--sr-paper); color: var(--sr-text); }
+.font-serif { font-family: var(--sr-font-display); }
+h1, h2, h3, .gt-brand, .gt-display, .gt-editorial-heading,
+.gt-explore-title, .gt-panel-title, .gt-metric-value, .gt-crew-card-name,
+.gt-crew-hero h1, .gt-intel-hero h1, .gt-outlook-top h1,
+.sr-intro h1, .sr-home-hero h1, .sr-report h1, .sr-section-head h2 {
+  font-family: var(--sr-font-display);
+  font-weight: 600;
+  letter-spacing: .008em;
+}
+.gt-intel-hero h1 { font: 600 clamp(28px,3.5vw,44px)/1.14 var(--sr-font-display); }
+.gt-crew-section-header h2, .gt-crew-oversight-heading h2,
+.gt-crew-finale h2 { font-family: var(--sr-font-display); }
+.sr-home-step, .sr-report-cards section, .sr-report-lower section,
+.sr-report-lower aside, .sr-controls, .sr-visual, .sr-outcomes,
+.gt-room-tile, .gt-intel-card, .gt-explore-metric { box-shadow: none; }
+
+/* Exactly the contour image from Rita's slide deck. Keep it behind text, never data. */
+.sr-nav-top { position: relative; isolation: isolate; background: var(--sr-navy); }
+.sr-nav-top::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("/rita-contours.webp");
+  background-size: 720px auto; background-position: 50% 49%;
+  opacity: .095;
+}
+.sr-nav-top > * { position: relative; z-index: 1; }
+.sr-masthead { background: var(--sr-navy); }
+.sr-global-links a[aria-current="page"], .sr-global-links a:hover {
+  background: #146281; border-bottom-color: var(--sr-aqua);
+}
+.sr-logo { font-family: var(--sr-font-display); font-weight: 600; letter-spacing: .015em; }
+.sr-brand-sub, .sr-header-role, .sr-global-links a,
+.sr-subnav a, .sr-micro-notice { font-family: var(--sr-font-body); }
+
+/* Home: matching Rita's navy cover slide, but keep real route links and CTA. */
+.sr-home { max-width: 1380px; padding-top: clamp(16px,2vw,27px); }
+.sr-home-hero {
+  position: relative; isolation: isolate; overflow: hidden;
+  padding: clamp(24px,4vw,56px); gap: clamp(18px,3.5vw,52px);
+  background: linear-gradient(115deg, #083e5f 0%, #0B4A6F 66%, #0C5A76 100%);
+  border: 1px solid #246b86;
+}
+.sr-home-hero::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("/rita-contours.webp");
+  background-size: cover; background-position: center;
+  opacity: .17;
+}
+.sr-home-hero > * { position: relative; z-index: 1; }
+.sr-home-hero h1 { color: #FFFFFF; font-size: clamp(2.6rem,5.2vw,4.8rem); line-height: 1.12; letter-spacing: .006em; }
+.sr-home-hero h1 em { color: #9FD3E2; }
+.sr-home-hero .sr-kicker { color: #9FD3E2; }
+.sr-home-hero p:not(.sr-kicker) { color: #D7E9F0; }
+.sr-home-hero .sr-hero-foot { color: #B9D9E4 !important; }
+.sr-home-hero .sr-tertiary { background: #F8FCFD; color: #0B4A6F; border-color: #9FD3E2; }
+.sr-home-hero .sr-tertiary:hover { background: #DDF0F5; }
+.sr-home-visual {
+  background-color: #0B4A6F;
+  background-image: linear-gradient(160deg,#073d60c0,#0C6984ad),url("/rita-contours.webp");
+  background-size: cover; background-position: center;
+  border: 1px solid #4A8EA5; box-shadow: 8px 8px 0 #74A7B8;
+}
+.sr-home-step { border-top: 3px solid var(--sr-teal-bright); }
+.sr-home-step h2 { font-family: var(--sr-font-display); font-size: 1.3rem; letter-spacing: .005em; }
+.sr-home-step p { min-height: 0; }
+
+/* Dark banners use the same visual grammar; evidence and tables stay clean. */
+.gt-intel-hero, .gt-crew-hero, .gt-country-hero,
+.gt-moderator-heading, .gt-journey, .gt-home-hero {
+  background-color: var(--sr-navy);
+  background-image: linear-gradient(120deg,#073e60ed,#0b4a6fe8),url("/rita-contours.webp");
+  background-size: cover; background-position: center;
+}
+.gt-crew-hero::before { display: none; } /* The actual contour artwork replaces the grid. */
+.gt-crew-hero h1, .gt-intel-hero h1 { color: #FFF; }
+.gt-intel-hero h1 em, .gt-crew-hero h1 em { color: #9FD3E2; }
+.gt-outlook-top h1, .gt-explore-title { letter-spacing: .01em; }
+.gt-room-head h1, .sr-intro h1 { font-family: var(--sr-font-display); font-weight: 600; letter-spacing: .008em; }
+.gt-room-tile, .gt-intel-card, .gt-explore-metric, .sr-report-cards section {
+  border-color: var(--sr-rule);
+}
+
+/* The public brief should read like Rita's editorial slide, not a demo dashboard. */
+.sr-report-header h1 { color: var(--sr-navy); font-family: var(--sr-font-display); letter-spacing: .008em; font-weight: 600; }
+.sr-report-banner { background: var(--sr-navy); border-left: 5px solid #00809C; }
+.sr-report-banner h2 { font-family: var(--sr-font-display); text-transform: uppercase; font-weight: 600; }
+.sr-report-cards span { font-family: var(--sr-font-body); font-weight: 700; }
+.sr-report-cards strong { color: var(--sr-navy); font-family: var(--sr-font-display); font-weight: 600; }
+.sr-report-unapproved { border-top: 4px solid var(--sr-teal-bright); }
+.sr-report-lower h3 { font-family: var(--sr-font-display); }
+
+/* Contribute: two actual controls, not links to non-existent sections. */
+.sr-contribute-shell { width: 100%; }
+.sr-contribute-head { padding: 1rem 0 1.3rem; border-bottom: 1px solid var(--sr-rule); }
+.sr-contribute-head .sr-kicker { margin-bottom: .4rem; }
+.sr-contribute-head h1 {
+  color: var(--sr-navy); text-transform: uppercase; font-family: var(--sr-font-display);
+  font-size: clamp(1.8rem,3.4vw,2.8rem); font-weight: 600; line-height: 1.14;
+}
+.sr-contribute-head h1 em { font-style: normal; color: var(--sr-teal-bright); }
+.sr-contribute-head p:last-child { margin-top: .5rem; font-size: .9rem; color: #526A78; }
+.sr-contribute-switch { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .55rem; margin: 1rem 0 1.25rem; }
+.sr-contribute-switch button {
+  display: flex; align-items: center; gap: .6rem; text-align: left; min-height: 58px;
+  padding: .75rem 1rem; border: 1px solid #BFCED6; background: #FFF; color: #174D62;
+  font-size: .9rem; font-weight: 700; cursor: pointer;
+}
+.sr-contribute-switch button:hover { border-color: #00809C; background: #EFF7F9; }
+.sr-contribute-switch button[aria-pressed="true"] {
+  border-color: #0B4A6F; background: #0B4A6F; color: #FFF;
+}
+.sr-contribute-switch button span { font-family: var(--sr-font-display); font-size: 1.1rem; opacity: .8; }
+.sr-contribute-shell [hidden] { display: none !important; }
+.sr-contribute-content { max-width: 850px; margin-inline: auto; }
+.sr-contribute-hint { color: #637985; font-size: .8rem; margin: 0 0 .95rem; line-height: 1.5; }
+.sr-contribute-content fieldset legend { font-family: var(--sr-font-display); font-size: 1.35rem; }
+.sr-contribute-content section, .sr-contribute-content details { border-color: var(--sr-rule); }
+.sr-contribute-content input:focus-visible,
+.sr-contribute-content textarea:focus-visible,
+.sr-contribute-content button:focus-visible,
+.sr-contribute-content select:focus-visible { outline: 2px solid var(--sr-teal-bright); outline-offset: 2px; }
+
+@media (max-width: 830px) {
+  .sr-home-hero { grid-template-columns: 1fr; }
+  .sr-home-visual { max-width: 550px; }
+  .sr-nav-top::before { background-size: 500px auto; }
+}
+@media (max-width: 600px) {
+  .sr-home { padding: .8rem .75rem 2rem; }
+  .sr-home-hero { padding: 1.2rem; }
+  .sr-home-hero h1 { font-size: clamp(2.2rem,10vw,3.3rem); }
+  .sr-contribute-switch button { padding: .7rem .65rem; min-height: 60px; font-size: .8rem; gap: .4rem; }
+  .sr-contribute-switch button span { font-size: .95rem; }
+  .sr-report-header h1 { font-size: 2.05rem; }
+  .gt-intel-hero, .gt-crew-hero { border-radius: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sr-contribute-switch button { transition: none; }
+}
+@media print {
+  .sr-nav-top::before, .sr-home-hero::before { display: none !important; }
+  .sr-contribute-switch { display: none !important; }
+  .sr-contribute-shell [hidden] { display: block !important; }
+}

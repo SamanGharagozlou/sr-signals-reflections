@@ -9,7 +9,7 @@ import { riskPortfolio } from "@/lib/risk-intelligence-model";
 
 export const Route = createFileRoute("/analysis")({
   head: () => ({ meta: [
-    { title: "Statistical Studio — SIGNAL Ground Truth" },
+    { title: "Statistical Studio — S&R Ground Truth" },
     { name: "description", content: "Source-backed descriptive humanitarian risk statistics and moderator-restricted historical outcomes, with limitations clearly stated." },
   ] }),
   component: AnalysisPage,
@@ -20,7 +20,7 @@ function AnalysisPage() {
   return <div className="min-h-screen bg-[#f3f6f7]"><AppHeader section="Statistical studio"/>
     <main className="gt-intel-shell">
       <header className="gt-intel-hero gt-intel-hero-analysis">
-        <p className="gt-intel-kicker">SIGNAL / HUMANITARIAN INTELLIGENCE / 03</p>
+        <p className="gt-intel-kicker">S&R / HUMANITARIAN INTELLIGENCE / 03</p>
         <h1>See the pattern. <em>Keep the uncertainty.</em></h1>
         <p>Descriptive analytics built from loaded ACAPS Risk Radar records. All denominators, missing fields and permission boundaries remain visible.</p>
         <div className="gt-intel-hero-links"><Link to="/risk-index">Browse the Risk Index →</Link><Link to="/explore">Open Risk Explorer →</Link></div>

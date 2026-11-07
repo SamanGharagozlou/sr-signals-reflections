@@ -12,9 +12,9 @@ import type { Confidence, Consultation, ExpertReceipt, PrivacyPreference, RiskAs
 export const Route = createFileRoute("/expert")({
   head: () => ({
     meta: [
-      { title: "Expert consultation — SIGNAL demo" },
+      { title: "Expert consultation — S&R demo" },
       { name: "description", content: "Four short steps: privacy, risk assessment, forecast and missing factors (synthetic demo)." },
-      { property: "og:title", content: "SIGNAL expert consultation" },
+      { property: "og:title", content: "S&R expert consultation" },
       { property: "og:description", content: "Independently assess an ACAPS risk and forecast a specific event." },
     ],
   }),

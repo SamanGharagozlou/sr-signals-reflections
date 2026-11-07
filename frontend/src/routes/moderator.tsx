@@ -12,9 +12,9 @@ import type { ModeratorDashboard, ModeratorRiskContext, PanelStats, RiskSourceRe
 export const Route = createFileRoute("/moderator")({
   head: () => ({
     meta: [
-      { title: "Moderator dashboard — SIGNAL demo" },
+      { title: "Moderator dashboard — S&R demo" },
       { name: "description", content: "Small-panel aggregates, evidence gaps and release workflow for an ACAPS risk consultation (synthetic)." },
-      { property: "og:title", content: "SIGNAL moderator dashboard" },
+      { property: "og:title", content: "S&R moderator dashboard" },
       { property: "og:description", content: "Review panel aggregates and approve privacy-safe summaries." },
     ],
   }),
@@ -236,7 +236,7 @@ function ModeratorSourceTrace({ riskId }: { riskId: string }) {
         <Link2 className="h-4 w-4 text-teal-deep" aria-hidden />
         <h2 className="text-lg font-semibold">Trace the evidence</h2>
       </div>
-      <p className="mt-2 text-sm text-muted-foreground">Read-only ACAPS Risk Radar context for the moderator. Source links are references; SIGNAL has not independently checked them.</p>
+      <p className="mt-2 text-sm text-muted-foreground">Read-only ACAPS Risk Radar context for the moderator. Source links are references; S&R has not independently checked them.</p>
       {q.status === "loading" && <p className="mt-3 text-sm text-muted-foreground">Loading source fields…</p>}
       {q.status === "error" && <p role="alert" className="mt-3 text-sm text-destructive">Source detail unavailable: {q.error.message}</p>}
       {q.status === "ok" && <SourceTraceDetails context={q.data} />}
@@ -287,7 +287,7 @@ function ModeratorEvidenceSynthesis() {
       <p className="text-xs font-semibold uppercase tracking-wider text-teal">Expert-to-analyst feedback loop</p>
       <h2 className="mt-1 text-lg font-semibold">Review a targeted follow-up</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        SIGNAL checks recurring keyword themes and suggests one question for human verification.
+        S&R checks recurring keyword themes and suggests one question for human verification.
         No expert quotations, source verification claims, or automatic outreach.
       </p>
       {q.status === "loading" && <p className="mt-4 text-sm text-muted-foreground">Preparing synthesis…</p>}
@@ -309,7 +309,7 @@ function ModeratorEvidenceSynthesis() {
             <ConfirmAction
               label="Approve draft for manual follow-up"
               title="Approve this verification question?"
-              description="The chosen question is stored for a moderator to use manually. SIGNAL will not contact experts or publish this draft."
+              description="The chosen question is stored for a moderator to use manually. S&R will not contact experts or publish this draft."
               confirmLabel="Approve draft"
               onConfirm={() => run(
                 () => api.approveModeratorFollowup(proposalId ?? ""),

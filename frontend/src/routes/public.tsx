@@ -1,68 +1,37 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { EyeOff } from "lucide-react";
-import { AppHeader, ErrorState, Loading, StatePanel } from "@/components/signal/ui";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, CheckCircle2, EyeOff, ShieldCheck } from "lucide-react";
+import { AppHeader, ErrorState, Loading } from "@/components/signal/ui";
 import { api, useApi } from "@/lib/api/client";
 
-export const Route = createFileRoute("/public")({
-  head: () => ({
-    meta: [
-      { title: "Public summary — SIGNAL demo" },
-      { name: "description", content: "Moderator-approved, privacy-safe aggregate from a SIGNAL expert consultation (synthetic data)." },
-      { property: "og:title", content: "SIGNAL public summary" },
-      { property: "og:description", content: "Privacy-safe aggregate of a synthetic expert consultation." },
-    ],
-  }),
-  component: PublicPage,
+export const Route=createFileRoute("/public")({
+  head:()=>({meta:[
+    {title:"Partner Brief | S&R — Signals & Reflection"},
+    {name:"description",content:"S&R privacy-safe, moderator-approved aggregate; no individual expert data."},
+  ]}),
+  component:PartnerBrief,
 });
-
-function PublicPage() {
-  const q = useApi(() => api.getPublicSummary());
-  return (
-    <div className="min-h-screen">
-      <AppHeader section="Public summary" />
-      <main className="mx-auto max-w-2xl px-4 py-10">
-        {q.status === "loading" && <Loading />}
-        {q.status === "error" && <ErrorState error={q.error} onRetry={q.refresh} />}
-        {q.status === "ok" && !q.data.approved && (
-          <StatePanel icon={<EyeOff className="h-6 w-6" />} title="No public summary approved">
-            <p>A moderator has not approved a privacy-safe summary for this consultation yet.</p>
-          </StatePanel>
-        )}
-        {q.status === "ok" && q.data.approved && (() => {
-          const d = q.data;
-          return (
-            <article className="space-y-6">
-              <header>
-                <p className="text-xs font-semibold uppercase tracking-wider text-teal">Risk {d.riskId} · frozen snapshot</p>
-                <h1 className="mt-1 text-3xl font-semibold">{d.riskTitle}</h1>
-                <p className="mt-2 text-sm text-muted-foreground">Approved {new Date(d.approvedAt!).toLocaleString()} · synthetic demo</p>
-              </header>
-              <section className="rounded-lg border bg-card p-5">
-                <h2 className="text-base font-semibold">ACAPS qualitative rating</h2>
-                <p className="mt-1">Risk level: <strong>{d.acapsRiskLevel}</strong></p>
-              </section>
-              <section className="rounded-lg border bg-card p-5">
-                <h2 className="text-base font-semibold">Expert panel forecast</h2>
-                <p className="mt-1 text-sm text-muted-foreground">{d.questionText}</p>
-                <p className="mt-4 text-3xl font-semibold text-heading">{d.medianBand}</p>
-                <p className="text-sm text-muted-foreground">Finalized median band from {d.panelN} synthetic experts</p>
-                <p className="mt-2 text-sm font-medium text-heading">
-                  {d.forecastRound === "revised_panel"
-                    ? "Approved revised panel: unrevised forecasts carried forward"
-                    : d.forecastRound === "initial_panel"
-                      ? "Approved initial panel: no revisions at approval"
-                      : "Publication round not recorded in this older snapshot"}
-                </p>
-                <p className="mt-3">{d.spreadDescription}</p>
-                <p className="mt-1">{d.agreementSummary}</p>
-              </section>
-              <p className="rounded-md bg-amber-soft p-4 text-sm text-amber-foreground">
-                This describes a small expert panel's views. It is not a calibrated prediction and not an official ACAPS forecast.
-              </p>
-            </article>
-          );
-        })()}
-      </main>
-    </div>
-  );
+function PartnerBrief(){
+  const q=useApi(()=>api.getPublicSummary());
+  return <div className="min-h-screen sr-bg"><AppHeader section="Partner view / approved only"/>
+    <main className="sr-page sr-report-page">
+      <p className="sr-kicker">SHARE / HUMAN-APPROVED INTELLIGENCE</p>
+      {q.status==="loading"&&<Loading label="Loading approved public snapshot…"/>}
+      {q.status==="error"&&<ErrorState error={q.error} onRetry={q.refresh}/>}
+      {q.status==="ok"&&!q.data.approved&&<div className="sr-report-unapproved"><EyeOff size={30}/><h1>Report awaiting approval</h1><p>The five-person synthetic expert panel and moderator review must be complete before the report is visible. S&R never presents a private or unapproved aggregate as public information.</p><Link className="sr-tertiary" to="/">Return to S&R <ArrowRight size={17}/></Link></div>}
+      {q.status==="ok"&&q.data.approved&&(()=>{
+        const d=q.data;
+        return <article className="sr-report">
+          <header className="sr-report-header"><div><p className="sr-kicker">PARTNER BRIEF / RISK {d.riskId} / SYNTHETIC CONSULTATION</p><h1>CHAD · <em>NEXT SIX MONTHS</em></h1><p>{d.riskTitle}</p></div><div className="sr-report-approved"><CheckCircle2 size={19}/> MODERATOR APPROVED</div></header>
+          <div className="sr-report-banner"><h2>Independent experts. Reviewed synthesis. Controlled release.</h2><p>The displayed range reflects an approved, rounded five-person synthetic judgment. It is not a validated event forecast or an official ACAPS assessment.</p></div>
+          <div className="sr-report-cards">
+            <section><span>Expert median band</span><strong>{d.medianBand}</strong><p>Approved and rounded. No individual estimates are shared.</p></section>
+            <section><span>Panel participation</span><strong>{d.panelN} / 5</strong><p>{d.forecastRound==="revised_panel"?"Approved revised Delphi panel":"Approved initial Delphi panel"}</p></section>
+            <section><span>Original risk context</span><strong>{d.acapsRiskLevel||"Not recorded"}</strong><p>Separate qualitative Risk Radar assessment, not the expert probability.</p></section>
+          </div>
+          <div className="sr-report-lower"><section><p className="sr-kicker">THE RESOLUTION QUESTION</p><h3>{d.questionText}</h3><details className="sr-disclosure"><summary>Panel agreement and spread</summary><p>{d.spreadDescription}</p><p>{d.agreementSummary}</p></details></section><aside><ShieldCheck size={20}/><h3>Publication controls</h3><p>Only the frozen approved snapshot is public. No individual notes, identities or unreviewed scenario calculations are included.</p><p>{d.approvedAt?`Approved ${new Date(d.approvedAt).toLocaleString()}`:"Approved synthetic snapshot"}</p></aside></div>
+          <div className="sr-report-footer"><p>Independent S&R hackathon prototype · Synthetic demo · No automated funding or operational decisions.</p><Link to="/situation-room">View geographic risk context <ArrowRight size={15}/></Link></div>
+        </article>;
+      })()}
+    </main>
+  </div>;
 }

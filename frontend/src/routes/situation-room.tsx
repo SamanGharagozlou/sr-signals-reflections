@@ -12,7 +12,7 @@ import { mapProvinceGeojson, type ProvinceMap } from "@/lib/geo/chad-provinces";
 import type { PublicSummary, RiskDetail, SituationRoomAnalyst } from "@/lib/api/types";
 
 export const Route = createFileRoute("/situation-room")({
-  head: () => ({ meta: [{ title: "Situation Room — SIGNAL Ground Truth" }, {
+  head: () => ({ meta: [{ title: "Situation Room — S&R Ground Truth" }, {
     name: "description", content: "Source-grounded humanitarian context and moderator-approved synthetic expert forecasting, with distinct analyst and public permissions.",
   }] }),
   component: SituationRoomPage,
@@ -25,10 +25,10 @@ function SituationRoomPage() {
   const [view, setView] = useState<View>("public");
   return <div className="min-h-screen bg-[#f0f4f5]">
     <AppHeader section="Situation room" />
-    <main className="mx-auto max-w-[1540px] px-4 pb-16 pt-7 sm:px-7">
+    <main className="mx-auto max-w-[1540px] px-4 pb-8 pt-4 sm:px-7">
       <div className="gt-room-head">
         <div>
-          <div className="gt-room-eyebrow">SIGNAL / GROUND TRUTH · EASTERN CHAD / R1043</div>
+          <div className="gt-room-eyebrow">S&R / GROUND TRUTH · EASTERN CHAD / R1043</div>
           <h1>One risk. Two levels of access.</h1>
           <p>Humanitarian context, independent expert forecasting and human approval—without confusing official data with synthetic opinions.</p>
         </div>
@@ -83,10 +83,11 @@ function AuthorizedAnalystRoom() {
         <Checkpoint label="Group feedback released" done={s.feedback_released}/>
         <Checkpoint label="Final forecast approved" done={s.approved}/>
         <Link className="gt-room-link" to="/moderator">Open moderator controls <ArrowRight size={15}/></Link>
+        <Link className="gt-room-link" to="/spillovers">Simulate a shock <ArrowRight size={15}/></Link>
       </aside>
       <div className="gt-room-central">
         <RiskMapPanel risk={r.risk}/>
-        <WorkflowTimeline panel={s}/>
+        <details className="sr-room-extra"><summary>Show panel workflow &amp; statistics</summary><WorkflowTimeline panel={s}/></details>
       </div>
       <aside className="gt-room-pane gt-room-side">
         <div className="gt-room-pane-head"><span>SECONDARY / SOURCE TRACE</span><FileSearch size={15}/></div>
@@ -99,7 +100,7 @@ function AuthorizedAnalystRoom() {
         <Link className="gt-room-link" to="/risk-index">Full Risk Index <ArrowRight size={15}/></Link>
       </aside>
     </div>
-    <CountryContext />
+    <details className="sr-room-extra"><summary>Show additional INFORM Severity context</summary><CountryContext /></details>
   </>;
 }
 
@@ -122,7 +123,7 @@ function PublicRoom() {
       </aside>
       <div className="gt-room-central">
         <RiskMapPanel risk={r}/>
-        <PublicTimeline approved={d.approved} summary={d}/>
+        <details className="sr-room-extra"><summary>Show publication checkpoints</summary><PublicTimeline approved={d.approved} summary={d}/></details>
       </div>
       <aside className="gt-room-pane gt-room-side">
         <div className="gt-room-pane-head"><span>SECONDARY / PUBLIC RISK RECORD</span><Globe2 size={15}/></div>
@@ -130,11 +131,11 @@ function PublicRoom() {
         <h3>{r.title}</h3>
         <dl className="gt-room-details"><div><dt>Qualitative risk</dt><dd>{r.risk_level || "Not recorded"}</dd></div><div><dt>Status</dt><dd>{r.status || "Not recorded"}</dd></div><div><dt>Country</dt><dd>{r.country || "Not recorded"}</dd></div></dl>
         <p className="gt-room-source-text">{r.triggers || "No trigger narrative supplied."}</p>
-        <p className="gt-room-fineprint">Source references are provided as context and have not been independently validated by SIGNAL.</p>
+        <p className="gt-room-fineprint">Source references are provided as context and have not been independently validated by S&R.</p>
         <Link className="gt-room-link" to="/explore">Risk Explorer <ArrowRight size={15}/></Link>
       </aside>
     </div>
-    <CountryContext />
+    <details className="sr-room-extra"><summary>Show additional INFORM Severity context</summary><CountryContext /></details>
   </>;
 }
 

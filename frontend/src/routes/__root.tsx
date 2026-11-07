@@ -79,8 +79,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SIGNAL — Ground Truth & Forecasting" },
-      { name: "description", content: "Synthetic-data prototype for structured expert consultation on humanitarian risk." },
+      { title: "S&R — Signals & Reflection" },
+      { name: "description", content: "Human-reviewed synthetic humanitarian risk consultation and transparent scenario exploration." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

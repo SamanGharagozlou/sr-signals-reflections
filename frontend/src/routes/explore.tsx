@@ -18,7 +18,7 @@ import {
 export const Route = createFileRoute("/explore")({
   head: () => ({
     meta: [
-      { title: "Risk Explorer — SIGNAL Ground Truth" },
+      { title: "Risk Explorer — S&R Ground Truth" },
       { name: "description", content: "Explore ACAPS Risk Radar records by country and qualitative risk level, then open the synthetic R1043 expert consultation." },
     ],
   }),
@@ -153,7 +153,7 @@ function ExplorerBody({ data }: { data: Awaited<ReturnType<typeof api.getRiskInv
       </aside>
     </div>
     <section className="gt-explore-next">
-      <div><p className="gt-explore-small-label text-[#8dd9e8]">SIGNAL / HUMAN IN THE LOOP</p><h2>From mapped risk to an accountable forecast.</h2><p>Source context is only the starting point. Experts provide independent estimates; moderators control feedback and publication.</p></div>
+      <div><p className="gt-explore-small-label text-[#8dd9e8]">S&R / HUMAN IN THE LOOP</p><h2>From mapped risk to an accountable forecast.</h2><p>Source context is only the starting point. Experts provide independent estimates; moderators control feedback and publication.</p></div>
       <div className="gt-explore-next-steps"><span>01 Explore</span><ArrowRight size={14}/><span>02 Forecast</span><ArrowRight size={14}/><span>03 Review</span><ArrowRight size={14}/><span>04 Approve</span></div>
     </section>
   </>;
@@ -219,7 +219,7 @@ function RiskDetailPanel({risk}:{risk:RiskInventoryEntry}){
     {detail.status==="ok" && <SourceDetail details={detail.data}/>}
     <SeverityIndexCard riskId={risk.id} />
     <InformCrisisContext country={risk.country} />
-    {risk.id === "R1043" ? <div className="gt-risk-open"><div className="mb-3 flex items-center gap-2"><Check size={16}/><span>Working synthetic consultation available</span></div><button type="button" disabled={opening!==null} onClick={()=>openDemo("expert")}>{opening==="expert"?"Opening…":"Open R1043 expert round"}<ArrowRight size={17} aria-hidden/></button><button type="button" className="secondary" disabled={opening!==null} onClick={()=>openDemo("moderator")}>{opening==="moderator"?"Opening…":"Review as moderator"}<ArrowUpRight size={16} aria-hidden/></button></div> : <p className="gt-no-round"><ClipboardCheck size={16} aria-hidden/> No expert consultation configured for {risk.id}. Source record only; SIGNAL does not fabricate forecasts.</p>}
+    {risk.id === "R1043" ? <div className="gt-risk-open"><div className="mb-3 flex items-center gap-2"><Check size={16}/><span>Working synthetic consultation available</span></div><button type="button" disabled={opening!==null} onClick={()=>openDemo("expert")}>{opening==="expert"?"Opening…":"Open R1043 expert round"}<ArrowRight size={17} aria-hidden/></button><button type="button" className="secondary" disabled={opening!==null} onClick={()=>openDemo("moderator")}>{opening==="moderator"?"Opening…":"Review as moderator"}<ArrowUpRight size={16} aria-hidden/></button></div> : <p className="gt-no-round"><ClipboardCheck size={16} aria-hidden/> No expert consultation configured for {risk.id}. Source record only; S&R does not fabricate forecasts.</p>}
   </section>;
 }
 function SourceDetail({details}:{details:RiskDetail}){
@@ -232,6 +232,6 @@ function SourceDetail({details}:{details:RiskDetail}){
       <div><span>Risk trend</span><strong>{details.trend||"Not stated"}</strong></div>
     </div>
     {details.triggers && <details className="gt-source-expand"><summary>View source trigger excerpt <ChevronDown size={15}/></summary><div className="mt-3 border-t pt-3"><RiskEvidence text={details.triggers}/></div></details>}
-    <p className="gt-detail-notice"><ShieldCheck size={14} aria-hidden/> Source text is not independently verified. ACAPS qualitative likelihood is not a SIGNAL six-month event probability.</p>
+    <p className="gt-detail-notice"><ShieldCheck size={14} aria-hidden/> Source text is not independently verified. ACAPS qualitative likelihood is not a S&R six-month event probability.</p>
   </>;
 }

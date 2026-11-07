@@ -9,7 +9,7 @@ import type { RiskInventory, RiskInventoryEntry } from "@/lib/api/types";
 import { filterRiskIndex, riskLevel, riskPortfolio, riskStatus, type RiskLevel, type RiskStatus } from "@/lib/risk-intelligence-model";
 
 export const Route = createFileRoute("/risk-index")({
-  head: () => ({ meta: [{ title: "Risk Index — SIGNAL Ground Truth" }, { name: "description", content: "Searchable ACAPS Risk Radar record index. Qualitative source assessments are distinct from severity and Delphi forecasts." }] }),
+  head: () => ({ meta: [{ title: "Risk Index — S&R Ground Truth" }, { name: "description", content: "Searchable ACAPS Risk Radar record index. Qualitative source assessments are distinct from severity and Delphi forecasts." }] }),
   component: RiskIndexPage,
 });
 
@@ -18,7 +18,7 @@ function RiskIndexPage() {
   return <div className="min-h-screen bg-[#f3f6f7]"><AppHeader section="Risk index"/>
     <main className="gt-intel-shell">
       <header className="gt-intel-hero">
-        <p className="gt-intel-kicker">SIGNAL / HUMANITARIAN INTELLIGENCE / 02</p>
+        <p className="gt-intel-kicker">S&R / HUMANITARIAN INTELLIGENCE / 02</p>
         <h1>Every risk has a <em>source.</em> Every decision needs context.</h1>
         <p>Browse ACAPS qualitative risk records, distinguish current conditions from future hazards, and inspect available evidence without inventing numerical scores.</p>
         <div className="gt-intel-hero-links"><Link to="/explore">Explore the map <ArrowRight size={16}/></Link><Link to="/analysis">View statistical analysis <ArrowRight size={16}/></Link></div>

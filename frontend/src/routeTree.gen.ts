@@ -19,6 +19,7 @@ import { Route as OutlookRouteImport } from './routes/outlook'
 import { Route as PublicRouteImport } from './routes/public'
 import { Route as RiskIndexRouteImport } from './routes/risk-index'
 import { Route as SituationRoomRouteImport } from './routes/situation-room'
+import { Route as SpilloversRouteImport } from './routes/spillovers'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +71,11 @@ const SituationRoomRoute = SituationRoomRouteImport.update({
   path: '/situation-room',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SpilloversRoute = SpilloversRouteImport.update({
+  id: '/spillovers',
+  path: '/spillovers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
   '/situation-room': typeof SituationRoomRoute
+  '/spillovers': typeof SpilloversRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
   '/situation-room': typeof SituationRoomRoute
+  '/spillovers': typeof SpilloversRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
   '/situation-room': typeof SituationRoomRoute
+  '/spillovers': typeof SpilloversRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/public'
     | '/risk-index'
     | '/situation-room'
+    | '/spillovers'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/public'
     | '/risk-index'
     | '/situation-room'
+    | '/spillovers'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/public'
     | '/risk-index'
     | '/situation-room'
+    | '/spillovers'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   PublicRoute: typeof PublicRoute
   RiskIndexRoute: typeof RiskIndexRoute
   SituationRoomRoute: typeof SituationRoomRoute
+  SpilloversRoute: typeof SpilloversRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SituationRoomRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/spillovers': {
+      id: '/spillovers'
+      path: '/spillovers'
+      fullPath: '/spillovers'
+      preLoaderRoute: typeof SpilloversRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   PublicRoute: PublicRoute,
   RiskIndexRoute: RiskIndexRoute,
   SituationRoomRoute: SituationRoomRoute,
+  SpilloversRoute: SpilloversRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

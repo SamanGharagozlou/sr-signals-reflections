@@ -7,8 +7,8 @@ import { crewCapabilityLabels, crewRoles, humanGates, type CrewStage } from "@/l
 
 export const Route = createFileRoute("/method")({
   head: () => ({ meta: [
-    { title: "How SIGNAL works — the Human Forecasting Loop" },
-    { name: "description", content: "Meet Rita's conceptual Agent Crew and inspect the human-approved evidence-to-forecast workflow implemented by SIGNAL." },
+    { title: "How S&R works — the Human Forecasting Loop" },
+    { name: "description", content: "Meet Rita's conceptual Agent Crew and inspect the human-approved evidence-to-forecast workflow implemented by S&R." },
   ] }),
   component: MethodPage,
 });
@@ -24,9 +24,9 @@ function MethodPage() {
         <section className="gt-crew-hero" aria-labelledby="crew-title">
           <div className="gt-crew-hero-orbit" aria-hidden="true"><span /><span /><span /></div>
           <div className="gt-crew-hero-copy">
-            <p className="gt-crew-eyebrow"><Sparkles size={14} aria-hidden="true" /> SIGNAL / THE HUMAN FORECASTING LOOP</p>
+            <p className="gt-crew-eyebrow"><Sparkles size={14} aria-hidden="true" /> S&R / THE HUMAN FORECASTING LOOP</p>
             <h1 id="crew-title">Meet the <em>Agent Crew.</em><br />Keep humans in charge.</h1>
-            <p className="gt-crew-hero-intro">Five memorable roles explain how humanitarian evidence becomes a transparent expert forecast. They are <strong>conceptual guides</strong> to SIGNAL's workflow—not five autonomous AI services.</p>
+            <p className="gt-crew-hero-intro">Five memorable roles explain how humanitarian evidence becomes a transparent expert forecast. They are <strong>conceptual guides</strong> to S&R's workflow—not five autonomous AI services.</p>
             <div className="gt-crew-hero-actions">
               <a href="#crew-stage" className="gt-crew-primary">Explore the crew <ArrowRight size={17} aria-hidden="true" /></a>
               <Link to="/explore" className="gt-crew-secondary">Open Risk Explorer <ArrowUpRight size={17} aria-hidden="true" /></Link>
@@ -40,7 +40,7 @@ function MethodPage() {
         <section id="crew-stage" className="gt-crew-section" aria-labelledby="crew-section-title">
           <div className="gt-crew-section-header">
             <div><p className="gt-crew-kicker">01 / THE CAST</p><h2 id="crew-section-title">Every role has a boundary.</h2></div>
-            <p>Choose a character to examine its responsibility, what SIGNAL actually implements, and what it never decides.</p>
+            <p>Choose a character to examine its responsibility, what S&R actually implements, and what it never decides.</p>
           </div>
           <div className="gt-crew-cards" role="group" aria-label="Select a conceptual role">
             {crewRoles.map((role, i) => (
@@ -68,7 +68,7 @@ function MethodPage() {
             </div>
             <div className="gt-crew-details-text">
               <div><span className="gt-crew-detail-label">The role in Rita's concept</span><p>{current.responsibility}</p></div>
-              <div><span className="gt-crew-detail-label">What SIGNAL demonstrates today</span><p>{current.inSignal}</p></div>
+              <div><span className="gt-crew-detail-label">What S&R demonstrates today</span><p>{current.inSignal}</p></div>
               <div className="gt-crew-guard"><LockKeyhole size={19} aria-hidden="true" /><span><strong>Non-negotiable boundary</strong>{current.safeguard}</span></div>
               <Link to={current.href} className="gt-crew-detail-link">{current.action} <ArrowUpRight size={16} aria-hidden="true" /></Link>
             </div>
@@ -77,7 +77,7 @@ function MethodPage() {
 
         <section className="gt-crew-loop" aria-labelledby="crew-loop-title">
           <div className="gt-crew-section-header">
-            <div><p className="gt-crew-kicker">02 / FROM SIGNAL TO DECISION</p><h2 id="crew-loop-title">One evidence-to-forecast loop.</h2></div>
+            <div><p className="gt-crew-kicker">02 / FROM S&R TO DECISION</p><h2 id="crew-loop-title">One evidence-to-forecast loop.</h2></div>
             <p>Click through a connected process; only verified backend outputs advance to public release.</p>
           </div>
           <ol className="gt-crew-timeline">

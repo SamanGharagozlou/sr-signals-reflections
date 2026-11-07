@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { AlertTriangle, Loader2, Lock, FlaskConical } from "lucide-react";
 import {
@@ -9,30 +9,36 @@ import { Button } from "@/components/ui/button";
 import type { Risk } from "@/lib/api/types";
 
 export function AppHeader({ section }: { section?: string }) {
+  const pathname = useRouterState({ select: s => s.location.pathname });
+  const analyses = ["/situation-room", "/explore", "/risk-index", "/analysis", "/outlook", "/spillovers", "/moderator", "/method"];
+  const inAnalyse = analyses.includes(pathname);
+  const mainNav: { label: string; to: "/" | "/expert" | "/situation-room" | "/public"; active: boolean }[] = [
+    { label: "HOME", to: "/", active: pathname === "/" },
+    { label: "CONTRIBUTE", to: "/expert", active: pathname === "/expert" },
+    { label: "ANALYSE", to: "/situation-room", active: inAnalyse },
+    { label: "SHARE", to: "/public", active: pathname === "/public" },
+  ];
+  const analyseNav: { label: string; to: "/situation-room" | "/explore" | "/spillovers" | "/outlook" | "/moderator"; active: boolean }[] = [
+    { label: "Situation Room", to: "/situation-room", active: pathname === "/situation-room" },
+    { label: "Countries", to: "/explore", active: pathname === "/explore" },
+    { label: "Spillovers", to: "/spillovers", active: pathname === "/spillovers" },
+    { label: "Risk outlook", to: "/outlook", active: pathname === "/outlook" },
+    { label: "Moderator review", to: "/moderator", active: pathname === "/moderator" },
+  ];
   return (
-    <header className="gt-masthead">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link to="/" className="flex min-h-12 items-center gap-3" aria-label="SIGNAL Ground Truth home">
-          <span aria-hidden className="gt-brand-mark">S</span>
-          <span className="flex flex-col">
-            <span className="gt-brand">SIGNAL</span>
-            <span className="gt-brand-subtitle">GROUND TRUTH / FORECASTING</span>
-          </span>
-        </Link>
-        <div className="flex items-center gap-3">
-          <nav aria-label="SIGNAL intelligence views" className="gt-studio-topnav">
-            <Link to="/explore">Explore</Link>
-            <Link to="/risk-index">Risk Index</Link>
-            <Link to="/analysis">Analysis</Link>
-            <Link to="/outlook">What-if Lab</Link>
-            <Link to="/situation-room">Situation Room</Link>
-            <Link to="/method">How it works</Link>
-          </nav>
-          <span className="hidden text-[10px] font-semibold tracking-[0.18em] text-white/55 uppercase md:inline">Expert insight · human decision</span>
-          {section && <span className="gt-role-chip">{section}</span>}
-        </div>
+    <header className="sr-masthead">
+      <div className="sr-nav-top">
+        <Link to="/" className="sr-logo" aria-label="S and R home">S&amp;R</Link>
+        <span className="sr-brand-sub">Signals &amp; Reflection</span>
+        <nav aria-label="Main navigation" className="sr-global-links">
+          {mainNav.map(l => <Link key={l.to} to={l.to} aria-current={l.active ? "page" : undefined}>{l.label}</Link>)}
+        </nav>
+        {section && <span className="sr-header-role">{section}</span>}
       </div>
-      <DemoBanner />
+      {inAnalyse && <nav className="sr-subnav" aria-label="Analyst views">
+        {analyseNav.map(l => <Link key={l.to} to={l.to} aria-current={l.active ? "page" : undefined}>{l.label}</Link>)}
+      </nav>}
+      <div className="sr-micro-notice">Illustrative scenario tool · synthetic experts · human-approved publication · Independent hackathon prototype, not an official ACAPS product</div>
     </header>
   );
 }

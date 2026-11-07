@@ -1,72 +1,52 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, ClipboardList, LayoutDashboard, Globe } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ArrowRight, CheckCircle2, ClipboardList, Compass, FileCheck2, MapPinned, ShieldCheck } from "lucide-react";
+import { useState } from "react";
 import { AppHeader } from "@/components/signal/ui";
 import { api } from "@/lib/api/client";
-import type { DemoRole } from "@/lib/api/types";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "SIGNAL — Ground Truth & Forecasting (demo)" },
-      { name: "description", content: "Choose a synthetic demo role to explore expert consultation, moderation and public summaries for humanitarian risk." },
-      { property: "og:title", content: "SIGNAL — Ground Truth & Forecasting" },
-      { property: "og:description", content: "A synthetic-data prototype for the ACAPS humanitarian risk challenge." },
-    ],
-  }),
-  component: Index,
+  head:()=>({meta:[
+    {title:"S&R | Signals & Reflection"},
+    {name:"description",content:"S&R is a moderator-first humanitarian expert consultation, scenario exploration and privacy-safe reporting prototype."},
+    {property:"og:title",content:"S&R — Signals & Reflection"},
+  ]}),
+  component:Home,
 });
-
-const roles: { role: DemoRole; to: "/expert" | "/moderator" | "/public"; title: string; body: string; icon: typeof Globe }[] = [
-  { role: "expert", to: "/expert", title: "Expert view", body: "Give your independent assessment and forecast in four short steps.", icon: ClipboardList },
-  { role: "moderator", to: "/moderator", title: "ACAPS moderator", body: "Review panel aggregates, release feedback and approve a public snapshot.", icon: LayoutDashboard },
-  { role: "public", to: "/public", title: "Public summary", body: "See the privacy-safe aggregate once a moderator approves it.", icon: Globe },
-];
-
-function Index() {
-  const navigate = useNavigate();
-  const enter = async (r: (typeof roles)[number]) => {
-    await api.login(r.role);
-    navigate({ to: r.to });
+function Home() {
+  const nav=useNavigate();
+  const [busy,setBusy]=useState(false);
+  const [error,setError]=useState("");
+  const enter=async()=>{
+    setBusy(true);setError("");
+    try{await api.login("expert");nav({to:"/expert"});}
+    catch(e){setError(e instanceof Error?e.message:"Cannot open expert demo");}
+    finally{setBusy(false);}
   };
-  return (
-    <div className="min-h-screen">
-      <AppHeader />
-      <main className="mx-auto max-w-4xl px-4 py-12 sm:py-20">
-        <section className="gt-home-hero" aria-labelledby="hero-title">
-          <div className="gt-hero-eyebrow"><span className="gt-dot" /> THE HUMAN FORECASTING LOOP <span className="text-white/45">/ ACAPS CHALLENGE DEMO</span></div>
-          <h1 id="hero-title" className="gt-display mt-5">LOCAL KNOWLEDGE.<br /><span className="gt-hero-emphasis">SHARED CLARITY.</span></h1>
-          <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">
-            Independent expert calls. Transparent disagreement. Human-approved humanitarian risk insight.
-          </p>
-          <div className="flex flex-wrap items-center gap-4">
-            <Link to="/explore" className="gt-explore-hero-cta">Explore the Risk Radar <ArrowRight size={18} aria-hidden/></Link>
-            <Link to="/method" className="gt-crew-home-link">Meet Rita's Agent Crew <ArrowRight size={16} aria-hidden /></Link>
-          </div>
-          <div className="gt-home-stages" aria-label="How SIGNAL works">
-            <span><strong>01</strong> Brief</span>
-            <span><strong>02</strong> Forecast</span>
-            <span><strong>03</strong> Deliberate</span>
-            <span><strong>04</strong> Publish</span>
-          </div>
-        </section>
-        <h2 className="mt-12 text-lg font-semibold">Choose your demo workspace</h2>
-        <p className="text-sm text-muted-foreground">Synthetic-demo sign-in only — shared invitation codes; inputs are stored in your local FastAPI demo database, not Lovable Cloud.</p>
-        <ul className="mt-4 grid gap-4 sm:grid-cols-3">
-          {roles.map((r) => (
-            <li key={r.role}>
-              <button onClick={() => enter(r)}
-                className="gt-role-card group flex h-full w-full flex-col rounded-lg border bg-card p-5 text-left transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-ring">
-                <r.icon className="h-6 w-6 text-teal" aria-hidden />
-                <span className="mt-3 font-serif text-lg font-semibold text-heading">{r.title}</span>
-                <span className="mt-1 flex-1 text-sm text-muted-foreground">{r.body}</span>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
-                  Enter demo <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </main>
-    </div>
-  );
+  return <div className="min-h-screen sr-bg">
+    <AppHeader section="Synthetic demo"/>
+    <main className="sr-home">
+      <div className="sr-home-hero">
+        <div><p className="sr-kicker">SIGNALS & REFLECTION / GROUND TRUTH</p>
+          <h1>From local signals to <em>shared understanding.</em></h1>
+          <p>Experts contribute independent judgment. Analysts review what changed and explore scenarios. Moderators approve the information partners can safely use.</p>
+          <div className="sr-home-actions"><button className="sr-primary" onClick={enter} disabled={busy}><ClipboardList size={18}/>{busy?"Opening expert demo…":"Start expert contribution"}<ArrowRight size={17}/></button><Link className="sr-tertiary" to="/situation-room"><MapPinned size={17}/> Open situation room</Link></div>
+          {error&&<p className="sr-error" role="alert">{error}</p>}
+          <p className="sr-hero-foot"><ShieldCheck size={15}/> Five synthetic experts · Human approval · No live humanitarian predictions</p>
+        </div>
+        <div className="sr-home-visual" aria-label="Expert contributions become reviewable intelligence and then a human-approved public brief">
+          <div className="sr-home-visual-top"><span className="sr-visual-number">01</span><p>EXPERT SIGNAL</p><strong>Independent forecast<br/>and evidence gap</strong></div>
+          <div className="sr-home-connector">↓</div>
+          <div className="sr-home-visual-top sr-home-visual-mid"><span className="sr-visual-number">02</span><p>ANALYST REFLECTION</p><strong>5-person panel<br/>and shock simulation</strong></div>
+          <div className="sr-home-connector">↓</div>
+          <div className="sr-home-visual-top sr-home-visual-last"><span className="sr-visual-number">03</span><p>APPROVED PARTNER BRIEF</p><strong>Privacy-safe<br/>human decision</strong></div>
+        </div>
+      </div>
+      <div className="sr-home-steps">
+        <div className="sr-home-step"><ClipboardList size={21}/><span>01 / CONTRIBUTE</span><h2>What do experts know?</h2><p>Capture an assessment, a six-month estimate and missing evidence, without treating opinion as fact.</p><button onClick={enter} disabled={busy}>Enter expert view <ArrowRight size={15}/></button></div>
+        <div className="sr-home-step"><Compass size={21}/><span>02 / ANALYSE</span><h2>What changed?</h2><p>See updated panel aggregates, review evidence gaps and use a transparent scenario sandbox.</p><Link to="/spillovers">Open analyst sandbox <ArrowRight size={15}/></Link></div>
+        <div className="sr-home-step"><FileCheck2 size={21}/><span>03 / SHARE</span><h2>What can we release?</h2><p>Present only a frozen moderator-approved aggregate, never private individual contributions.</p><Link to="/public">Open partner brief <ArrowRight size={15}/></Link></div>
+      </div>
+      <p className="sr-home-footnote"><CheckCircle2 size={15}/> ACAPS Risk Radar information is source context. Expert responses and all scenario paths are synthetic. S&R is an independent hackathon prototype, not an official ACAPS deployment.</p>
+    </main>
+  </div>;
 }

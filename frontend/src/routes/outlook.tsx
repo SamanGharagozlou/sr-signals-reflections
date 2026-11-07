@@ -8,7 +8,7 @@ import { DEMO_EVENTS, OUTLOOK_WEEKS, outlookSeries, scenarioFinal, scenarioNarra
 import type { OutlookPoint } from "@/lib/outlook-model";
 
 export const Route = createFileRoute("/outlook")({
-  head: () => ({ meta: [{ title: "Illustrative Outlook & What-if — SIGNAL" }, { name: "description", content: "Educational six-month scenario curves with transparent assumptions, distinct from approved Delphi forecasts." }] }),
+  head: () => ({ meta: [{ title: "Illustrative Outlook & What-if — S&R" }, { name: "description", content: "Educational six-month scenario curves with transparent assumptions, distinct from approved Delphi forecasts." }] }),
   component: OutlookPage,
 });
 
@@ -34,7 +34,7 @@ function OutlookPage() {
     <div className="gt-outlook-warning" role="note"><FlaskConical size={17} aria-hidden/> Educational scenario model with invented numerical inputs. No calibrated ACAPS predictions, simulations or real confidence intervals.</div>
     <main className="gt-outlook-shell">
       <header className="gt-outlook-top">
-        <div><p className="gt-outlook-eyebrow">SIGNAL / FORWARD LOOKING INTELLIGENCE / CHAD DEMONSTRATION</p><h1>Explore how assumptions <em>shape an outlook.</em></h1><p>Six-month illustrative scenarios beside source risk intelligence. Analyst judgment and moderator approval remain separate from this educational model.</p></div>
+        <div><p className="gt-outlook-eyebrow">S&R / FORWARD LOOKING INTELLIGENCE / CHAD DEMONSTRATION</p><h1>Explore how assumptions <em>shape an outlook.</em></h1><p>Six-month illustrative scenarios beside source risk intelligence. Analyst judgment and moderator approval remain separate from this educational model.</p></div>
         <div className="gt-outlook-toplinks"><Link to="/explore">Risk Explorer <ArrowRight size={15}/></Link><Link to="/moderator">Moderator <ArrowRight size={15}/></Link></div>
       </header>
       <nav className="gt-outlook-tabs" aria-label="Outlook views">

@@ -786,3 +786,61 @@
 @media(max-width:600px){.sr-page{padding:1rem .75rem 2rem}.sr-sandbox-grid{gap:.75rem}.sr-home{padding:1.4rem .9rem}.sr-home-visual{display:none}.sr-analyst-report,.sr-report-banner{padding:1rem}.sr-network{max-height:none}.sr-demo-label{white-space:normal}.sr-global-links{gap:0}}
 @media(prefers-reduced-motion:reduce){.sr-network-live .sr-edge-on{animation:none}.sr-result-track>span{transition:none}}
 @media print{.sr-masthead,.sr-subnav,.sr-micro-notice,.sr-analyst-report button,.sr-playback{display:none!important}.sr-report-page{max-width:100%}}
+
+/* S&R Phase 15A — Rita's presentation-aligned visual language.
+   Presentation only. Preserves all existing permissions, behavior, and data. */
+:root {
+  --sr-navy: #0B4A6F;
+  --sr-navy-dark: #083D5D;
+  --sr-teal: #00738C;
+  --sr-teal-bright: #00809C;
+  --sr-pale: #DDF0F5;
+  --sr-sky: #9FD3E2;
+  --sr-paper: #F6F7F7;
+  --sr-ink: #162E39;
+  --sr-rule: #DDE1E4;
+  --sr-font-display: "Oswald", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --sr-font-body: "Roboto Condensed", "IBM Plex Sans", Arial, sans-serif;
+}
+/* The app already implements Rita's navy/teal token values; these are
+   intentionally scoped presentation refinements rather than a theme rewrite. */
+body { font-family: var(--sr-font-body); }
+h1, h2, h3 { font-family: var(--sr-font-display); letter-spacing: .005em; }
+.sr-masthead { background: var(--sr-navy); }
+.sr-nav-top { min-height: 66px; }
+.sr-logo { font-family: var(--sr-font-display); letter-spacing: -.035em; font-weight: 600; font-size: 1.85rem; line-height: 1.2; }
+.sr-brand-sub { font-family: var(--sr-font-body); font-size: .83rem; letter-spacing: .14em; color: #C7E4ED; }
+.sr-global-links a { font-family: var(--sr-font-body); font-size: .87rem; font-weight: 700; letter-spacing: .055em; }
+.sr-global-links a:hover, .sr-global-links a[aria-current=page] { background: #176078; border-bottom-color: var(--sr-sky); }
+.sr-subnav { border-bottom-color: var(--sr-rule); }
+.sr-subnav a { font-family: var(--sr-font-body); }
+.sr-header-role { font-family: var(--sr-font-body); }
+.sr-micro-notice { font-family: var(--sr-font-body); font-size: .78rem; }
+.sr-home { max-width: 1320px; }
+.sr-home-hero h1, .sr-intro h1, .sr-report-header h1, .sr-report h1,
+.sr-report-unapproved h1 { font-family: var(--sr-font-display); font-weight: 600; letter-spacing: .005em; text-transform: uppercase; line-height: 1.11; }
+.sr-home-hero h1 { font-size: clamp(2.55rem, 5.1vw, 4.5rem); }
+.sr-home-step h2, .sr-report-banner h2, .sr-report-lower h3,
+.sr-report-unapproved h2 { font-family: var(--sr-font-display); font-weight: 600; letter-spacing: .008em; text-transform: uppercase; }
+.sr-home-step, .sr-report-cards section, .sr-report-lower section,
+.sr-report-lower aside { border-color: var(--sr-rule); box-shadow: none; }
+.sr-home-visual { background-color: var(--sr-navy); background-image:
+  radial-gradient(ellipse at 15% 5%,transparent 55%,rgba(159,211,226,.14) 55.3%,transparent 56%),
+  radial-gradient(ellipse at 75% 75%,transparent 63%,rgba(159,211,226,.12) 63.3%,transparent 64%); }
+.sr-report-banner { background: var(--sr-navy); }
+.sr-report-cards strong { font-family: var(--sr-font-display); font-weight: 600; letter-spacing: .01em; }
+.sr-home-step p, .sr-report-cards p, .sr-report-lower p { line-height: 1.55; }
+.sr-primary, .sr-home-step a, .sr-home-step button { font-family: var(--sr-font-body); font-weight: 700; }
+.gt-intel-hero h1, .gt-crew-hero h1, .gt-outlook-top h1,
+.gt-brand, .gt-journey-kicker { font-family: var(--sr-font-display); letter-spacing: .005em; }
+.sr-global-links a:focus-visible, .sr-subnav a:focus-visible, .sr-logo:focus-visible {
+  outline: 2px solid var(--sr-sky); outline-offset: 2px;
+}
+@media (max-width: 830px) {
+  .sr-nav-top { gap: .8rem; }
+  .sr-global-links a { font-size: .78rem; }
+}
+@media (max-width: 600px) {
+  .sr-home-hero h1 { font-size: clamp(2.2rem, 9vw, 3rem); }
+  .sr-micro-notice { font-size: .69rem; line-height: 1.35; }
+}

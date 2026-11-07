@@ -1,10 +1,10 @@
-# SIGNAL ACAPS — Technical verification for reviewers
+# S&R — Technical verification for reviewers
 
 > Snapshot: **7 November 2026, 20:59 CET**. This document describes a tested hackathon prototype, not a production deployment. Test results must be rerun and updated on the final submitted commit, particularly after Phase 16A.
 
 ## 1. Purpose and design
 
-SIGNAL ACAPS (Signals & Reflections) prototypes a human-in-the-loop workflow for anticipatory humanitarian analysis:
+S&R (Signals & Reflections) prototypes a human-in-the-loop workflow for anticipatory humanitarian analysis:
 
 1. **Explore context** through a Ukraine regional map, illustrative 26-week risk series, and knowledge graph.
 2. **Contribute judgment** through a separate synthetic Chad six-month expert forecasting question.

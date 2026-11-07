@@ -1,18 +1,33 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { CrisisAgenda } from "@/components/signal/crisis-agenda";
 import { ArrowRight, CheckCircle2, EyeOff, ShieldCheck } from "lucide-react";
 import { AppHeader, ErrorState, Loading } from "@/components/signal/ui";
 import { api, useApi } from "@/lib/api/client";
 
 export const Route=createFileRoute("/public")({
   head:()=>({meta:[
-    {title:"Partner Brief | S&R — Signals & Reflection"},
+    {title:"Crisis Agenda & Approved Brief | S&R — Signals & Reflection"},
     {name:"description",content:"S&R privacy-safe, moderator-approved aggregate; no individual expert data."},
   ]}),
-  component:PartnerBrief,
+  component:ShareRoot,
 });
-function PartnerBrief(){
+// Phase 15E: Crisis Agenda is intentionally independent from the protected public summary API.
+function ShareRoot(){
+  const [screen,setScreen] = useState<"agenda" | "brief">("agenda");
+  return <div className="min-h-screen sr-bg sr-15e-share-shell">
+    <AppHeader section={screen === "agenda" ? "Share / synthetic crisis agenda" : "Partner view / approved only"}/>
+    <nav className="sr-15e-share-nav" aria-label="Share sections">
+      <button type="button" aria-pressed={screen === "agenda"} onClick={()=>setScreen("agenda")}>Crisis agenda</button>
+      <button type="button" aria-pressed={screen === "brief"} onClick={()=>setScreen("brief")}>Approved intelligence</button>
+    </nav>
+    {screen === "agenda" ? <CrisisAgenda /> : <ApprovedBrief />}
+  </div>;
+}
+
+function ApprovedBrief(){
   const q=useApi(()=>api.getPublicSummary());
-  return <div className="min-h-screen sr-bg"><AppHeader section="Partner view / approved only"/>
+  return <div className="min-h-screen sr-bg">
     <main className="sr-page sr-report-page">
       <p className="sr-kicker">SHARE / HUMAN-APPROVED INTELLIGENCE</p>
       {q.status==="loading"&&<Loading label="Loading approved public snapshot…"/>}

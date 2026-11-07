@@ -305,7 +305,28 @@ export interface EvidenceTriageInput {
   disposition: "triaged" | "open";
 }
 
+/** Moderator-only read model. No expert-level records or notes are included. */
+export interface SituationRoomAnalyst {
+  role: "moderator";
+  synthetic: true;
+  risk: RiskDetail;
+  source: string;
+  forecast: { question: string; deadline: string; resolution: string; status: string };
+  source_context: ModeratorRiskContext;
+  panel: {
+    count: number; expected: number; ready: boolean;
+    feedback_released: boolean; approved: boolean;
+    round_one_median: number | null; round_one_range: number[];
+    revised_panel_median: number | null; revised_panel_range: number[];
+    revised_count: number; median_change_pp: number | null;
+    agreement: Record<RiskAssessment, number>;
+    approved_band: string | null; approved_round: "initial_panel" | "revised_panel" | null;
+  };
+  notice: string;
+}
+
 export interface SignalApi {
+  getSituationRoomAnalyst(): Promise<SituationRoomAnalyst>;
   getRiskInventory(): Promise<RiskInventory>;
   getRiskDetail(riskId: string): Promise<RiskDetail>;
   getSeverityIndex(riskId: string): Promise<SeverityIndex>;

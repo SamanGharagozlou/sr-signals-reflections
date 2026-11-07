@@ -5,7 +5,7 @@ import type { EvidenceReviewQueue } from "./types";
  * No client-side statistics, source synthesis, or unsupported access to raw submissions.
  * Demo-only shared invitation codes: NEVER use for real humanitarian contributors.
  */
-import { ApiError, type SignalApi, type DemoRole, type Consultation, type ExpertReceipt, type ModeratorDashboard, type PanelStats, type HistoricalEvaluation, type ModeratorSynthesis, type ModeratorCounterpoint, type ModeratorRiskContext, type DelphiCounterpoint, type RiskInventory, type RiskDetail, type SeverityIndex, type InformCountryCrisisContext } from "./types";
+import { ApiError, type SignalApi, type DemoRole, type Consultation, type ExpertReceipt, type ModeratorDashboard, type PanelStats, type HistoricalEvaluation, type ModeratorSynthesis, type ModeratorCounterpoint, type ModeratorRiskContext, type DelphiCounterpoint, type RiskInventory, type RiskDetail, type SeverityIndex, type InformCountryCrisisContext, type EvidenceReviewQueue, type SituationRoomAnalyst } from "./types";
 
 const PATH = "/api";
 const TOKEN_KEY = "signal-demo-token";
@@ -115,6 +115,7 @@ const getRawConsultation = () => request<RawConsultation>("/consultation");
 const getRawMe = () => request<RawMe>("/me", {}, true);
 
 export const fastapiAdapter: SignalApi = {
+  async getSituationRoomAnalyst() { return request<SituationRoomAnalyst>("/moderator/situation-room", {}, true); },
   async getRiskInventory() { return request<RiskInventory>("/risks"); },
   async getRiskDetail(riskId) { return request<RiskDetail>(`/risks/${encodeURIComponent(riskId)}`); },
   async getSeverityIndex(riskId) { return request<SeverityIndex>(`/risks/${encodeURIComponent(riskId)}/severity`); },

@@ -18,6 +18,7 @@ import { Route as ModeratorRouteImport } from './routes/moderator'
 import { Route as OutlookRouteImport } from './routes/outlook'
 import { Route as PublicRouteImport } from './routes/public'
 import { Route as RiskIndexRouteImport } from './routes/risk-index'
+import { Route as SituationRoomRouteImport } from './routes/situation-room'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,11 @@ const RiskIndexRoute = RiskIndexRouteImport.update({
   path: '/risk-index',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SituationRoomRoute = SituationRoomRouteImport.update({
+  id: '/situation-room',
+  path: '/situation-room',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/outlook': typeof OutlookRoute
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
+  '/situation-room': typeof SituationRoomRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/outlook': typeof OutlookRoute
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
+  '/situation-room': typeof SituationRoomRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/outlook': typeof OutlookRoute
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
+  '/situation-room': typeof SituationRoomRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/outlook'
     | '/public'
     | '/risk-index'
+    | '/situation-room'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/outlook'
     | '/public'
     | '/risk-index'
+    | '/situation-room'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/outlook'
     | '/public'
     | '/risk-index'
+    | '/situation-room'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +157,7 @@ export interface RootRouteChildren {
   OutlookRoute: typeof OutlookRoute
   PublicRoute: typeof PublicRoute
   RiskIndexRoute: typeof RiskIndexRoute
+  SituationRoomRoute: typeof SituationRoomRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -212,6 +225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RiskIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/situation-room': {
+      id: '/situation-room'
+      path: '/situation-room'
+      fullPath: '/situation-room'
+      preLoaderRoute: typeof SituationRoomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   OutlookRoute: OutlookRoute,
   PublicRoute: PublicRoute,
   RiskIndexRoute: RiskIndexRoute,
+  SituationRoomRoute: SituationRoomRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

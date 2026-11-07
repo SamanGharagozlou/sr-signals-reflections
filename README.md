@@ -1,9 +1,9 @@
 # SIGNAL — Trusted Expert Ground Truth & Forecasting
 
 <!-- SIGNAL_JURY_START -->
-## For judges — SIGNAL ACAPS at a glance
+## For judges — S&R at a glance
 
-**SIGNAL ACAPS (Signals & Reflections)** is a hackathon prototype for **ACAPS — Ground Truth for Anticipatory Action**. It connects regional risk exploration, structured six-month expert forecasts, transparent aggregation, and **human-controlled review and publication**.
+**S&R (Signals & Reflections)** is a hackathon prototype for **ACAPS — Ground Truth for Anticipatory Action**. It connects regional risk exploration, structured six-month expert forecasts, transparent aggregation, and **human-controlled review and publication**.
 
 **Demonstrated flow:** explore a synthetic Ukraine region scenario → inspect its knowledge graph → contribute to a separate synthetic Chad forecast panel → review the panel in a protected moderator workspace → release bounded group feedback → proceed to a **separate, approval-gated** public-intelligence step (final browser approval still to be verified).
 

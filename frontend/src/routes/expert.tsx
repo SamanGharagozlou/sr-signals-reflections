@@ -1,3 +1,4 @@
+import { SourceEvidenceIntake } from "@/components/signal/source-evidence-intake";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { CheckCircle2, ChevronDown, Hourglass, ShieldCheck, MessageCircleQuestion, EyeOff, ArrowLeftRight } from "lucide-react";
@@ -33,7 +34,7 @@ function ExpertPage() {
       <DeniedState message="The expert consultation is only available in the demo expert role."
         action={<Button className="min-h-11" onClick={async () => { await api.login("expert"); window.location.reload(); }}>Enter as demo expert</Button>} />
     );
-  else body = <ExpertGate consultation={consultation.data} />;
+  else body = <><SourceEvidenceIntake /><ExpertGate consultation={consultation.data} /></>;
   return (
     <div className="min-h-screen">
       <AppHeader section="Expert" />

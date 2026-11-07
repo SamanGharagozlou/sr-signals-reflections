@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalysisRouteImport } from './routes/analysis'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as ExpertRouteImport } from './routes/expert'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as MethodRouteImport } from './routes/method'
@@ -29,6 +30,11 @@ const IndexRoute = IndexRouteImport.update({
 const AnalysisRoute = AnalysisRouteImport.update({
   id: '/analysis',
   path: '/analysis',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExpertRoute = ExpertRouteImport.update({
@@ -80,6 +86,7 @@ const SpilloversRoute = SpilloversRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analysis': typeof AnalysisRoute
+  '/demo': typeof DemoRoute
   '/expert': typeof ExpertRoute
   '/explore': typeof ExploreRoute
   '/method': typeof MethodRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analysis': typeof AnalysisRoute
+  '/demo': typeof DemoRoute
   '/expert': typeof ExpertRoute
   '/explore': typeof ExploreRoute
   '/method': typeof MethodRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analysis': typeof AnalysisRoute
+  '/demo': typeof DemoRoute
   '/expert': typeof ExpertRoute
   '/explore': typeof ExploreRoute
   '/method': typeof MethodRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/analysis'
+    | '/demo'
     | '/expert'
     | '/explore'
     | '/method'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/analysis'
+    | '/demo'
     | '/expert'
     | '/explore'
     | '/method'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/analysis'
+    | '/demo'
     | '/expert'
     | '/explore'
     | '/method'
@@ -162,6 +174,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalysisRoute: typeof AnalysisRoute
+  DemoRoute: typeof DemoRoute
   ExpertRoute: typeof ExpertRoute
   ExploreRoute: typeof ExploreRoute
   MethodRoute: typeof MethodRoute
@@ -187,6 +200,13 @@ declare module '@tanstack/react-router' {
       path: '/analysis'
       fullPath: '/analysis'
       preLoaderRoute: typeof AnalysisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/expert': {
@@ -258,6 +278,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalysisRoute: AnalysisRoute,
+  DemoRoute: DemoRoute,
   ExpertRoute: ExpertRoute,
   ExploreRoute: ExploreRoute,
   MethodRoute: MethodRoute,

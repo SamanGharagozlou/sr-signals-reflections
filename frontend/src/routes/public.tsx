@@ -32,6 +32,21 @@ function PartnerBrief(){
           <div className="sr-report-footer"><p>Independent S&R hackathon prototype · Synthetic demo · No automated funding or operational decisions.</p><Link to="/situation-room">View geographic risk context <ArrowRight size={15}/></Link></div>
         </article>;
       })()}
+      {/* S&R PHASE 15D: CHAD EXPERT INVITATION — always public-safe; never uses unpublished panel data. */}
+      {q.status==="ok"&&<ChadExpertInvitation />}
     </main>
   </div>;
+}
+
+// Static invitation: independent of the moderator-approval state and private forecast data.
+function ChadExpertInvitation(){
+  return <section className="sr-p15d-chad" aria-labelledby="sr-p15d-chad-title">
+    <div>
+      <p className="sr-p15d-eyebrow">CHAD / SYNTHETIC EXPERT CONSULTATION</p>
+      <h2 id="sr-p15d-chad-title">Where could more expert context help?</h2>
+      <p>Explore a fictional six-month consultation in Chad and contribute a synthetic judgment or fictional supporting source for moderator review. This is a hackathon demonstration, not an official ACAPS request or validated priority call.</p>
+      <p className="sr-p15d-note">Individual forecasts remain private; a public aggregate is displayed above only following explicit moderator approval.</p>
+    </div>
+    <Link className="sr-p15d-link" to="/expert">Contribute to the synthetic consultation <ArrowRight size={17} aria-hidden="true"/></Link>
+  </section>;
 }

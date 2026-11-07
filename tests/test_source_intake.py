@@ -102,4 +102,99 @@ class EvidenceIntakeTests(unittest.TestCase):
         r=self.client.post("/api/evidence/preview",json={"source_type":"note","source_text":SAMPLE},headers=self.mod)
         self.assertEqual(r.status_code,403)
 
+
+# Additional Phase 13 tests for safe synthetic references and private PNG attachments.
+class MultiSourceTests(unittest.TestCase):
+    def setUp(self):
+        self.original = EvidenceIntakeTests()
+        self.original.setUp()
+        self.client = self.original.client
+        self.expert = self.original.expert
+        self.mod = self.original.mod
+        self.basic = self.original.submit_data
+
+    def tearDown(self):
+        self.original.tearDown()
+
+    @staticmethod
+    def tiny_png() -> str:
+        import base64
+        import struct
+        import zlib
+        def chunk(tag, content):
+            crc = zlib.crc32(tag + content) & 0xffffffff
+            return struct.pack('>I',len(content)) + tag + content + struct.pack('>I',crc)
+        ihdr = struct.pack('>IIBBBBB', 2, 2, 8, 6, 0, 0, 0)
+        pixels = (b'\x00' + bytes((120, 150, 175, 255))*2) * 2
+        png = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR',ihdr) + chunk(b'IDAT',zlib.compress(pixels)) + chunk(b'IEND',b'')
+        return base64.b64encode(png).decode()
+
+    def test_link_preview_strips_tracking_and_never_fetches(self):
+        data={"source_type":"link", "source_text":"https://example.org/synthetic-chad-arrivals?token=SECRET#fragment"}
+        result=self.client.post('/api/evidence/preview',headers=self.expert,json=data)
+        self.assertEqual(result.status_code,200,result.text)
+        text=result.json()['sanitized_preview']
+        self.assertEqual(text,'https://example.org/synthetic-chad-arrivals')
+        self.assertNotIn('SECRET',text)
+        submitted=self.client.post('/api/evidence/submit',headers=self.expert,json={**self.basic,**data})
+        self.assertEqual(submitted.status_code,200,submitted.text)
+        self.assertEqual(submitted.json()['item']['source_type'],'link')
+        self.assertEqual(submitted.json()['item']['redacted_text'],text)
+        self.assertFalse(submitted.json()['item']['has_photo'])
+
+    def test_link_rejects_non_https_local_and_credential_urls(self):
+        for url in ('http://example.org/x','https://localhost/a','https://127.0.0.1/a',
+                    'https://a:b@example.org/x','https://example.org:8080/path',
+                    'https://internal.local/a','file:///etc/passwd'):
+            with self.subTest(url=url):
+                r=self.client.post('/api/evidence/preview',headers=self.expert,
+                                   json={"source_type":"link","source_text":url})
+                self.assertIn(r.status_code,(400,422),r.text)
+
+    def test_photo_is_private_and_persisted(self):
+        photo={**self.basic,'source_type':'photo','source_text':'Fictional Chad arrivals near Iriba',
+               'photo_png_base64':self.tiny_png()}
+        saved=self.client.post('/api/evidence/submit',headers=self.expert,json=photo)
+        self.assertEqual(saved.status_code,200,saved.text)
+        self.assertTrue(saved.json()['item']['has_photo'])
+        self.assertNotIn('photo_png_base64', saved.text)
+        self.assertNotIn('png_data', self.client.get('/api/moderator/source-intake',headers=self.mod).text)
+        self.assertEqual(self.client.get('/api/moderator/source-intake/1/photo').status_code,401)
+        self.assertEqual(self.client.get('/api/moderator/source-intake/1/photo',headers=self.expert).status_code,403)
+        self.assertEqual(self.client.get('/api/evidence/1/photo',headers=self.mod).status_code,403)
+        with_photo=self.client.get('/api/moderator/source-intake/1/photo',headers=self.mod)
+        self.assertEqual(with_photo.status_code,200)
+        self.assertEqual(with_photo.headers['content-type'],'image/png')
+        self.assertEqual(with_photo.headers['cache-control'],'private, no-store')
+        self.assertEqual(with_photo.content[:8],b'\x89PNG\r\n\x1a\n')
+        self.assertEqual(self.client.get('/api/evidence/1/photo',headers=self.expert).status_code,200)
+
+    def test_photo_rejects_missing_invalid_and_metadata(self):
+        import base64
+        import struct
+        import zlib
+        photo={**self.basic,'source_type':'photo','source_text':'Fictional Chad arrivals near Iriba'}
+        self.assertEqual(self.client.post('/api/evidence/submit',headers=self.expert,json=photo).status_code,400)
+        self.assertEqual(self.client.post('/api/evidence/submit',headers=self.expert,
+                         json={**photo,'photo_png_base64':'not base64!!'}).status_code,400)
+        blob=base64.b64decode(self.tiny_png())
+        extra=b'SECRET SOURCE'
+        typ=b'tEXt'
+        text_chunk=struct.pack('>I',len(extra))+typ+extra+struct.pack('>I',zlib.crc32(typ+extra)&0xffffffff)
+        photo_with_text=base64.b64encode(blob[:33]+text_chunk+blob[33:]).decode()
+        self.assertEqual(self.client.post('/api/evidence/submit',headers=self.expert,
+                         json={**photo,'photo_png_base64':photo_with_text}).status_code,400)
+        self.assertEqual(self.client.post('/api/evidence/submit',headers=self.expert,
+                         json={**self.basic,'photo_png_base64':self.tiny_png()}).status_code,400)
+
+    def test_photo_ownership_and_reviewer_workflow(self):
+        photo={**self.basic,'source_type':'photo','source_text':'Fictional Chad arrivals near Iriba',
+               'photo_png_base64':self.tiny_png()}
+        self.assertEqual(self.client.post('/api/evidence/submit',headers=self.expert,json=photo).status_code,200)
+        decision=self.client.post('/api/moderator/source-intake/1/review',headers=self.mod,
+                                  json={'decision':'needs_more_evidence','note':'Synthetic image only','expected_version':0})
+        self.assertEqual(decision.status_code,200,decision.text)
+        self.assertEqual(decision.json()['item']['source_type'],'photo')
+        self.assertEqual(decision.json()['item']['status'],'needs_more_evidence')
+
 if __name__ == "__main__": unittest.main()

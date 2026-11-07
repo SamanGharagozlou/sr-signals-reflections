@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { AppHeader, ConfirmAction, DeniedState, ErrorState, Loading, RiskSummary, StatePanel } from "@/components/signal/ui";
 import { AgreementVisual, ForecastVisuals } from "@/components/signal/forecast-visuals";
 import { Button } from "@/components/ui/button";
+import { EvidenceReviewQueue } from "@/components/signal/evidence-review-queue";
 import { api, useApi } from "@/lib/api/client";
 import type { ModeratorDashboard, ModeratorRiskContext, PanelStats, RiskSourceReference } from "@/lib/api/types";
 
@@ -109,6 +110,7 @@ function Dashboard({ d, refresh }: { d: ModeratorDashboard; refresh: () => void 
 
         <ModeratorEvidenceSynthesis />
         <ModeratorReflectionPrompt />
+        <EvidenceReviewQueue />
         <HistoricalOutcomes />
 
         <section>

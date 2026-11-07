@@ -1,3 +1,4 @@
+import type { EvidenceReviewQueue } from "./types";
 /**
  * SIGNAL synthetic-demo FastAPI adapter.
  * Maps the real API contract to the Lovable presentation models.

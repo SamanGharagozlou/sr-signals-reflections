@@ -338,9 +338,9 @@ export interface SignalApi {
   getExpertReceipt(): Promise<ExpertReceipt | null>;
   getExpertFeedback(): Promise<ExpertFeedback>;
   reviseExpert(probability: number): Promise<ExpertReceipt>;
-  getModeratorDashboard(): Promise<ModeratorDashboard>;
   getEvidenceReviewQueue(): Promise<EvidenceReviewQueue>;
   triageEvidenceFlag(input: EvidenceTriageInput): Promise<void>;
+  getModeratorDashboard(): Promise<ModeratorDashboard>;
   getModeratorRiskContext(riskId: string): Promise<ModeratorRiskContext>;
   getHistoricalEvaluation(): Promise<HistoricalEvaluation>;
   getModeratorSynthesis(): Promise<ModeratorSynthesis>;

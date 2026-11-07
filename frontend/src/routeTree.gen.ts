@@ -15,6 +15,7 @@ import { Route as ExpertRouteImport } from './routes/expert'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as MethodRouteImport } from './routes/method'
 import { Route as ModeratorRouteImport } from './routes/moderator'
+import { Route as OutlookRouteImport } from './routes/outlook'
 import { Route as PublicRouteImport } from './routes/public'
 import { Route as RiskIndexRouteImport } from './routes/risk-index'
 
@@ -48,6 +49,11 @@ const ModeratorRoute = ModeratorRouteImport.update({
   path: '/moderator',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OutlookRoute = OutlookRouteImport.update({
+  id: '/outlook',
+  path: '/outlook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PublicRoute = PublicRouteImport.update({
   id: '/public',
   path: '/public',
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/explore': typeof ExploreRoute
   '/method': typeof MethodRoute
   '/moderator': typeof ModeratorRoute
+  '/outlook': typeof OutlookRoute
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/explore': typeof ExploreRoute
   '/method': typeof MethodRoute
   '/moderator': typeof ModeratorRoute
+  '/outlook': typeof OutlookRoute
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/explore': typeof ExploreRoute
   '/method': typeof MethodRoute
   '/moderator': typeof ModeratorRoute
+  '/outlook': typeof OutlookRoute
   '/public': typeof PublicRoute
   '/risk-index': typeof RiskIndexRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/method'
     | '/moderator'
+    | '/outlook'
     | '/public'
     | '/risk-index'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/method'
     | '/moderator'
+    | '/outlook'
     | '/public'
     | '/risk-index'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/method'
     | '/moderator'
+    | '/outlook'
     | '/public'
     | '/risk-index'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   ExploreRoute: typeof ExploreRoute
   MethodRoute: typeof MethodRoute
   ModeratorRoute: typeof ModeratorRoute
+  OutlookRoute: typeof OutlookRoute
   PublicRoute: typeof PublicRoute
   RiskIndexRoute: typeof RiskIndexRoute
 }
@@ -178,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ModeratorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/outlook': {
+      id: '/outlook'
+      path: '/outlook'
+      fullPath: '/outlook'
+      preLoaderRoute: typeof OutlookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/public': {
       id: '/public'
       path: '/public'
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExploreRoute: ExploreRoute,
   MethodRoute: MethodRoute,
   ModeratorRoute: ModeratorRoute,
+  OutlookRoute: OutlookRoute,
   PublicRoute: PublicRoute,
   RiskIndexRoute: RiskIndexRoute,
 }

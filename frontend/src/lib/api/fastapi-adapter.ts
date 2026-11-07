@@ -1,3 +1,4 @@
+import type { EvidenceReviewQueue } from "./types";
 /**
  * SIGNAL synthetic-demo FastAPI adapter.
  * Maps the real API contract to the Lovable presentation models.
@@ -169,6 +170,12 @@ export const fastapiAdapter: SignalApi = {
     const result = receipt(await getRawMe());
     if (!result) throw new ApiError(500,"Revision saved but receipt could not be reloaded.");
     return result;
+  },
+  async getEvidenceReviewQueue() {
+    return request<EvidenceReviewQueue>("/moderator/evidence-queue", {}, true);
+  },
+  async triageEvidenceFlag(input) {
+    await request("/moderator/evidence-queue/triage", { method: "POST", body: JSON.stringify(input) }, true);
   },
   async getModeratorDashboard(): Promise<ModeratorDashboard> {
     const [consultation, raw] = await Promise.all([

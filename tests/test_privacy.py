@@ -92,7 +92,7 @@ class PrivacyBoundaryTests(unittest.TestCase):
         self.assertNotIn('expert_id',snapshot)
         self.assertNotIn('note',snapshot)
         self.assertEqual(self.client.post('/api/moderator/publish',headers=moderator,json={}).status_code,409)
-        self.assertEqual(self.client.post('/api/expert/revise',headers=expert,json={'probability':0}).status_code,200)
+        self.assertEqual(self.client.post('/api/expert/revise',headers=expert,json={'probability':0}).status_code,409)
         self.assertEqual(self.client.get('/api/public-summary').json(),snapshot)
         self.assertEqual(self.client.post('/api/demo/reset',headers=moderator,json={}).status_code,200)
         self.assertFalse(self.client.get('/api/public-summary').json()['available'])

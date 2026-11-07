@@ -154,6 +154,17 @@ export const mockAdapter: SignalApi = {
     return delay(r, 400);
   },
 
+  getEvidenceReviewQueue: () => {
+    requireRole("moderator");
+    return delay({ available: false, source: "Browser-only synthetic mock", total_records: 1, items: [],
+      reason: "Source-field review requires the local FastAPI Risk Radar dataset.",
+      methodology: "Missing-field prompts are not verified evidence.",
+      summary: { open_flags: 0, triaged_flags: 0, flagged_records: 0, review_first_records: 0, by_rule: {} } });
+  },
+  async triageEvidenceFlag() {
+    requireRole("moderator");
+    throw new ApiError(409, "Evidence triage requires the local FastAPI service.");
+  },
   async getModeratorDashboard() {
     requireRole("moderator");
     const p = panel();

@@ -259,6 +259,52 @@ export interface PublicSummary {
   questionText?: string;
 }
 
+/** Moderator-only, deterministic field-completeness prompts; not verified evidence. */
+export interface EvidenceQualityFlag {
+  code: string;
+  label: string;
+  priority: "review-first" | "review";
+  source_field: string;
+  field_present: boolean;
+  reason: string;
+  suggested_review: string;
+  fingerprint: string;
+  triaged: boolean;
+  triaged_at: string | null;
+}
+export interface EvidenceReviewItem {
+  risk_id: string;
+  source_risk_id_present: boolean;
+  title: string;
+  country: string;
+  status: string;
+  risk_level: string;
+  priority: "review-first" | "review";
+  flags: EvidenceQualityFlag[];
+  open_flags: number;
+}
+export interface EvidenceReviewQueue {
+  available: boolean;
+  source: string;
+  total_records: number;
+  items: EvidenceReviewItem[];
+  reason?: string | null;
+  methodology: string;
+  summary: {
+    open_flags: number;
+    triaged_flags: number;
+    flagged_records: number;
+    review_first_records: number;
+    by_rule: Record<string, number>;
+  };
+}
+export interface EvidenceTriageInput {
+  risk_id: string;
+  rule_code: string;
+  fingerprint: string;
+  disposition: "triaged" | "open";
+}
+
 export interface SignalApi {
   getRiskInventory(): Promise<RiskInventory>;
   getRiskDetail(riskId: string): Promise<RiskDetail>;
@@ -271,6 +317,8 @@ export interface SignalApi {
   getExpertReceipt(): Promise<ExpertReceipt | null>;
   getExpertFeedback(): Promise<ExpertFeedback>;
   reviseExpert(probability: number): Promise<ExpertReceipt>;
+  getEvidenceReviewQueue(): Promise<EvidenceReviewQueue>;
+  triageEvidenceFlag(input: EvidenceTriageInput): Promise<void>;
   getModeratorDashboard(): Promise<ModeratorDashboard>;
   getModeratorRiskContext(riskId: string): Promise<ModeratorRiskContext>;
   getHistoricalEvaluation(): Promise<HistoricalEvaluation>;

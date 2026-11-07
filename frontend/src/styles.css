@@ -1277,3 +1277,37 @@ h1, h2, h3, .gt-brand, .gt-display, .gt-editorial-heading,
 .sr-ukg-reader-detail>div strong{color:#14465b;font-size:.84rem}
 .sr-ukg-reader-detail p{margin:0;color:#355d6e;font-size:.78rem;line-height:1.55}
 .sr-ukg-reader-detail small{color:#795b2e;font-size:.68rem;line-height:1.5}
+
+/* S&R Phase 16A — verified ACAPS archive metadata, separate from synthetic Crisis Agenda */
+.sr-16a-mode{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0 18px;padding:8px;border:1px solid #bfdce4;background:#edf5f7;border-radius:10px}
+.sr-16a-mode button{border:1px solid #a9cad5;background:white;border-radius:6px;color:#153d52;font-weight:750;padding:11px 17px;cursor:pointer}
+.sr-16a-mode button.active{color:white;background:#07536b;border-color:#07536b}
+.sr-16a{font-family:inherit;max-width:1400px;margin:auto;color:#153d52}
+.sr-16a-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin:12px 0 21px}
+.sr-16a-eyebrow{font-size:12px;letter-spacing:1.5px;color:#007f9a;font-weight:800}
+.sr-16a-heading h1{font-size:clamp(27px,3vw,44px);line-height:1.08;letter-spacing:.2px;margin:5px 0;color:#113f5c}
+.sr-16a-heading h1 span{color:#058ca2}
+.sr-16a-heading p{color:#526f7c;margin:7px 0 0;line-height:1.55}
+.sr-16a-heading a{display:inline-flex;align-items:center;gap:8px;color:#005c70;font-weight:750;border:1px solid #98c3cf;border-radius:6px;padding:11px 13px;text-decoration:none;background:white}
+.sr-16a-notice{display:flex;align-items:flex-start;gap:13px;border:1px solid #d8bc91;background:#fbf1e6;color:#674721;padding:14px 17px;border-radius:4px;line-height:1.5;margin-bottom:23px}
+.sr-16a-notice svg{flex-shrink:0;margin-top:3px}
+.sr-16a-controls{display:flex;align-items:end;gap:13px;flex-wrap:wrap}
+.sr-16a-controls label{display:flex;flex-direction:column;gap:7px;color:#225267;font-weight:750;min-width:220px;flex:1}
+.sr-16a-controls input,.sr-16a-controls select{height:44px;border:1px solid #bad0d8;padding:0 12px;border-radius:5px;color:#153d52;background:white;width:100%;box-sizing:border-box;font:inherit}
+.sr-16a-search{display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid #bad0d8;border-radius:5px;background:white}
+.sr-16a-search input{border:0;padding:0;outline:0;min-width:0}
+.sr-16a-count{color:#587580;font-size:13px;margin:17px 0 11px}
+.sr-16a-reports{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.sr-16a-report{padding:18px 20px;border-radius:7px;border:1px solid #d7e4e9;background:white;box-shadow:0 3px 10px rgba(20,70,90,.04)}
+.sr-16a-country{display:flex;align-items:center;gap:8px;font-size:13px;color:#6b8792}
+.sr-16a-country a{display:flex;align-items:center;gap:3px;color:#00748b;font-weight:800;font-size:15px;text-decoration:none}
+.sr-16a-country span{margin-left:auto}
+.sr-16a-report h2{font-size:clamp(17px,1.4vw,21px);line-height:1.32;margin:13px 0 9px}
+.sr-16a-report h2 a{color:#0e4562;text-decoration:none}
+.sr-16a-report h2 a:hover,.sr-16a-country a:hover{text-decoration:underline}
+.sr-16a-report p{color:#5d7581;line-height:1.5;font-size:14px;margin:0 0 13px}
+.sr-16a-meta{border-top:1px solid #e7edf0;padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;color:#647f89}
+.sr-16a-meta a{display:inline-flex;align-items:center;gap:5px;color:#005e73;font-weight:750;text-decoration:none}
+.sr-16a-empty{padding:30px;text-align:center;background:white;border:1px solid #d7e4e9}
+.sr-16a-foot{font-size:12px;color:#657e87;line-height:1.5;margin-top:18px}
+@media(max-width:760px){.sr-16a-reports{grid-template-columns:1fr}.sr-16a-heading{align-items:flex-start}.sr-16a-controls{display:block}.sr-16a-controls label{margin-bottom:12px}}

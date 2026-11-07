@@ -8,12 +8,15 @@ import {
 
 import { getVerifiedReport } from "@/lib/verified-report-index";
 
+import { AcapsPublications } from "@/components/signal/acaps-publications";
+
 type Panel = "experts" | "update" | "actions";
 type Stage = 0 | 1 | 2 | 3;
 const STAGES = ["You ask", "They answer", "Propose sharing names", "Both agree"];
 
 /** Completely local presentation-only interactions. No API writes or storage. */
 export function CrisisAgenda() {
+  const [shareMode, setShareMode] = useState<"archive" | "demo">("archive");
   const [order, setOrder] = useState<Order>("need");
   const [region, setRegion] = useState<"All" | Region>("All");
   const [underOnly, setUnderOnly] = useState(false);
@@ -40,7 +43,12 @@ export function CrisisAgenda() {
   };
   const choose = (e: Expert) => { if (!e.available) return; setExpert(e); setQuestion(""); setSubmittedQuestion(""); setStage(0); };
 
-  return <main className="sr-15e" aria-label="Illustrative crisis agenda">
+  return <main className="sr-15e" aria-label="ACAPS publications and illustrative crisis agenda">
+    <div className="sr-16a-mode" role="group" aria-label="Share view">
+      <button type="button" className={shareMode==="archive"?"active":""} aria-pressed={shareMode==="archive"} onClick={()=>setShareMode("archive")}>ACAPS publications · real sources</button>
+      <button type="button" className={shareMode==="demo"?"active":""} aria-pressed={shareMode==="demo"} onClick={()=>setShareMode("demo")}>Crisis agenda · synthetic demo</button>
+    </div>
+    {shareMode === "archive" ? <AcapsPublications/> : <>
     <div className="sr-15e-disclaimer"><Info size={16} aria-hidden="true" /> SYNTHETIC SCENARIO — all rankings, needs, dates, expert profiles, exchanges and recommendations on this screen are fictional; no messages are transmitted.</div>
     <div className="sr-15e-layout">
       <aside className="sr-15e-sidebar" aria-label="Crisis agenda filters">
@@ -92,6 +100,7 @@ export function CrisisAgenda() {
         <div className="sr-15e-footer"><p>This screen is a standalone synthetic interaction prototype. For real, up-to-date analysis, consult the source directly.</p><Link to="/expert">Existing Chad synthetic forecasting workflow <ArrowRight size={15} aria-hidden="true"/></Link></div>
       </section>
     </div>
+    </>}
   </main>;
 }
 

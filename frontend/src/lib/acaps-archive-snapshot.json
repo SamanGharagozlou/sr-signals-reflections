@@ -1,0 +1,63 @@
+{
+  "checkedOn": "2026-11-07",
+  "archiveUrl": "https://www.acaps.org/en/countries/archives",
+  "status": "curated-snapshot",
+  "items": [
+    {
+      "id": "afghanistan-flood-20261028", "country": "Afghanistan", "publishedOn": "2026-10-28",
+      "title": "Afghanistan: community perspectives on early flood warning and preparedness",
+      "topic": "Natural hazards", "summary": "Community access to early warnings and preparedness in four flood-prone Afghan provinces.",
+      "reportUrl": "https://www.acaps.org/fileadmin/Data_Product/Main_media/20261028_ACAPS_Afghanistan_-_Community_perspectives_on_early_flood_warning_and_preparedness_.pdf",
+      "detailUrl": "https://www.acaps.org/en/countries/archives/detail/afghanistan-community-perspectives-on-early-flood-warning-and-preparedness",
+      "linkType": "pdf", "linkBasis": "provided-by-team"
+    },
+    {
+      "id": "colombia-border-20261015", "country": "Colombia", "publishedOn": "2026-10-15",
+      "title": "Colombia: Humanitarian impacts in the municipalities along the Nariño–Ecuador border",
+      "topic": "Conflict and violence · Displacement · Gender", "summary": "Cross-border humanitarian impacts and constraints in six municipalities of Nariño.",
+      "reportUrl": "https://www.acaps.org/fileadmin/Data_Product/Main_media/20261015_ACAPS_Colombia_-_Humanitarian_impacts_in_the_municipalities_along_the_Narino-Ecuador_border_.pdf",
+      "detailUrl": "https://www.acaps.org/en/countries/archives/detail/colombia-humanitarian-impacts-in-the-municipalities-along-the-narino-ecuador-border",
+      "linkType": "pdf", "linkBasis": "provided-by-team"
+    },
+    {
+      "id": "ukraine-access-20261015", "country": "Ukraine", "publishedOn": "2026-10-15",
+      "title": "Ukraine: May–August 2026 humanitarian access update",
+      "topic": "Humanitarian access", "summary": "Comparative access constraints across Ukraine's oblasts and raions.",
+      "reportUrl": "https://www.acaps.org/en/countries/ukraine",
+      "detailUrl": "https://www.acaps.org/en/countries/ukraine",
+      "linkType": "country-page", "linkBasis": "verified-acaps-page"
+    },
+    {
+      "id": "drc-mpox-20261013", "country": "DR Congo", "publishedOn": "2026-10-13",
+      "title": "DRC: Mpox outbreak affecting Kasaï province",
+      "topic": "Health", "summary": "Mpox outbreak analysis for Kasaï province, including health-system implications.",
+      "reportUrl": "https://www.acaps.org/en/countries/democratic-republic-of-the-congo",
+      "detailUrl": "https://www.acaps.org/en/countries/democratic-republic-of-the-congo",
+      "linkType": "country-page", "linkBasis": "verified-acaps-page"
+    },
+    {
+      "id": "yemen-protection-20261012", "country": "Yemen", "publishedOn": "2026-10-12",
+      "title": "Yemen: Child protection situational analysis covering IRG-controlled areas",
+      "topic": "Protection", "summary": "Child protection risks across seven governorates during January–June 2026.",
+      "reportUrl": "https://www.acaps.org/en/countries/yemen",
+      "detailUrl": "https://www.acaps.org/en/countries/yemen",
+      "linkType": "country-page", "linkBasis": "verified-acaps-page"
+    },
+    {
+      "id": "colombia-earthquake-20260925", "country": "Colombia", "publishedOn": "2026-09-25",
+      "title": "Colombia: Earthquake’s expected humanitarian impacts",
+      "topic": "Natural hazards", "summary": "Expected impacts and evolving needs following the 10 August earthquake.",
+      "reportUrl": "https://www.acaps.org/en/countries/archives/detail/colombia-earthquakes-expected-humanitarian-impacts",
+      "detailUrl": "https://www.acaps.org/en/countries/archives/detail/colombia-earthquakes-expected-humanitarian-impacts",
+      "linkType": "report-page", "linkBasis": "verified-acaps-page"
+    },
+    {
+      "id": "ukraine-cold-20260923", "country": "Ukraine", "publishedOn": "2026-09-23",
+      "title": "Ukraine: Scenarios for the 2026–2027 cold season",
+      "topic": "Anticipatory analysis · Natural hazards", "summary": "Four plausible futures for Ukraine during the October 2026–March 2027 cold season.",
+      "reportUrl": "https://www.acaps.org/en/countries/archives/detail/ukraine-scenarios-for-the-2026-2027-cold-season",
+      "detailUrl": "https://www.acaps.org/en/countries/archives/detail/ukraine-scenarios-for-the-2026-2027-cold-season",
+      "linkType": "report-page", "linkBasis": "verified-acaps-page"
+    }
+  ]
+}

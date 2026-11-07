@@ -1,4 +1,6 @@
-# SIGNAL — Trusted Expert Ground Truth & Forecasting
+# S&R — Signals & Reflections
+
+**Trusted Expert Ground Truth & Anticipatory Forecasting**
 
 <!-- SIGNAL_JURY_START -->
 ## For judges — S&R at a glance

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import { ArrowLeft, ArrowRight, Info, MapPinned } from "lucide-react";
 import { AppHeader } from "@/components/signal/ui";
+import { UkraineRiskKnowledgeGraph } from "@/components/signal/ukraine-risk-knowledge-graph";
 import { buildRegion, colorFor, pearson, weeklyChanges, type Scenario, type ScenarioRegion, type UkraineRegion } from "@/lib/ukraine-zoom-model";
 
 export const Route = createFileRoute("/ukraine-zoom")({
@@ -99,6 +100,7 @@ function UkraineZoom() {
             <p className="sr-ukz-fine">Correlation does not imply causation; these values are calculated from fictional series, not current Ukraine observations.</p>
           </aside>
         </div>
+        <UkraineRiskKnowledgeGraph regions={rows} selected={selected} onSelectRegion={setSelectedId}/>
         <section className="sr-ukz-matrix-card" aria-labelledby="sr-ukz-matrix-title">
           <h2 id="sr-ukz-matrix-title">How closely do regions move together?</h2>
           <p>Pearson correlation of changes in fictional weekly index series (26 weeks). Selected region plus eight most correlated regions. Select a row label to focus that region.</p>

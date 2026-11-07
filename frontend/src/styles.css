@@ -1216,3 +1216,64 @@ h1, h2, h3, .gt-brand, .gt-display, .gt-editorial-heading,
 .sr-15f-source-scope{font-size:12px;line-height:1.4;color:#395e6f}
 .sr-15f-note{margin-top:7px;font-size:11px;line-height:1.45;color:#5d6e79}
 @media(max-width:640px){.sr-15f-source-card{padding:11px}}
+
+/* S&R Phase 15I — Ukraine Risk Index Knowledge Graph; isolated from existing views. */
+.sr-ukg{margin:.9rem 0 1.1rem;padding:1.2rem 1.25rem;background:#fff;border:1px solid #d9e8ec;color:#173f52}
+.sr-ukg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1.25rem}
+.sr-ukg-head>div{max-width:72ch}
+.sr-ukg-head h2{display:flex;align-items:center;gap:.55rem;font-size:clamp(1.35rem,2.3vw,1.9rem);line-height:1.2;font-weight:850;color:#103a50;margin:.45rem 0 .55rem}
+.sr-ukg-head h2 svg{color:#087f93;flex-shrink:0}
+.sr-ukg-head p:not(.sr-ukz-kicker){font-size:.88rem;line-height:1.65;color:#4c6975}
+.sr-ukg-export{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;white-space:nowrap;background:#0f5169;color:#fff;border:1px solid #0f5169;border-radius:.35rem;padding:.7rem 1rem;font-size:.82rem;font-weight:800}
+.sr-ukg-export:hover{background:#087b91}.sr-ukg-export:focus-visible,.sr-ukg-node:focus-visible,.sr-ukg-relations button:focus-visible{outline:3px solid #b87722;outline-offset:3px}
+.sr-ukg-notice{display:flex;align-items:flex-start;gap:.6rem;background:#f9f0e5;border-left:4px solid #c28a48;color:#674b27;padding:.8rem 1rem;line-height:1.55;font-size:.82rem;margin:1rem 0}
+.sr-ukg-notice svg{flex-shrink:0;margin-top:.12rem}
+.sr-ukg-legend{display:flex;gap:.75rem 1.5rem;flex-wrap:wrap;align-items:center;font-size:.74rem;color:#476573;margin-bottom:.8rem}
+.sr-ukg-legend span{display:flex;align-items:center;gap:.45rem}
+.sr-ukg-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,.1)}
+.sr-ukg-dot-scenario{background:#149ab0}.sr-ukg-dot-geography{background:#91aebb}.sr-ukg-dot-reference{background:#dab37a}
+.sr-ukg-layout{display:grid;grid-template-columns:minmax(0,2.4fr) minmax(260px,1fr);align-items:stretch;gap:.8rem}
+.sr-ukg-scroll{overflow-x:auto;max-width:100%;background:linear-gradient(160deg,#f4f9fa,#eaf4f7);border:1px solid #dae9ed}
+.sr-ukg-canvas{position:relative;min-width:900px;height:485px;isolation:isolate}
+.sr-ukg-lines{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none}
+.sr-ukg-node{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;justify-content:center;gap:.18rem;align-items:center;text-align:center;padding:.45rem .55rem;width:152px;min-height:65px;border-radius:.45rem;border:2px solid #b1ccd3;background:#fff;color:#184255;box-shadow:0 2px 8px rgba(13,49,65,.09);cursor:pointer;z-index:1;line-height:1.2}
+.sr-ukg-node span{font-weight:850;font-size:.78rem;overflow-wrap:anywhere;max-width:100%}
+.sr-ukg-node small{font-size:.61rem;font-weight:650;opacity:.75}
+.sr-ukg-node-index{background:#0c5f79;color:#fff;border-color:#0c5f79}
+.sr-ukg-node-theme{background:#bce7ed;color:#10495b;border-color:#70bbca}
+.sr-ukg-node-country,.sr-ukg-node-geography{background:#e8f0f3;color:#2d5667;border-color:#9fbcc8}
+.sr-ukg-node-reference{background:#fcf3e6;color:#805222;border-color:#d3b083}
+.sr-ukg-node.is-active{outline:3px solid #d08b34;outline-offset:3px;z-index:2}
+.sr-ukg-node:hover{filter:brightness(.97);box-shadow:0 4px 14px rgba(13,49,65,.18)}
+.sr-ukg-details{background:#123b50;color:#eff9fb;padding:1.05rem;min-height:340px;overflow-wrap:anywhere}
+.sr-ukg-eyebrow{letter-spacing:.12em;text-transform:uppercase;color:#a5e3e5;font-weight:800;font-size:.66rem}
+.sr-ukg-details h3{font-size:1.22rem;font-weight:850;margin:.45rem 0 .55rem;line-height:1.25}
+.sr-ukg-details>p:not(.sr-ukg-eyebrow){line-height:1.55;font-size:.82rem;color:#d4e7ec;margin:.65rem 0}
+.sr-ukg-provenance{display:inline-block;font-size:.67rem;font-weight:800;padding:.24rem .5rem;border:1px solid #c1e6ea;border-radius:.25rem;color:#d5f6fa}
+.sr-ukg-provenance-context-only{border-color:#d5b887;color:#ffdfb0}
+.sr-ukg-source-link{display:inline-flex;align-items:center;gap:.35rem;text-decoration:underline;color:#a4e6ee;font-size:.78rem;font-weight:750}
+.sr-ukg-source-link:hover{color:#fff}
+.sr-ukg-details h4{font-size:.83rem;font-weight:800;margin:1.1rem 0 .5rem}
+.sr-ukg-relations{list-style:none;padding:0;margin:0;display:grid;gap:.4rem;max-height:280px;overflow-y:auto}
+.sr-ukg-relations li{padding:.45rem .5rem;border:1px solid rgba(204,238,245,.22);background:rgba(255,255,255,.05)}
+.sr-ukg-relations li button{display:block;color:#b1ecf1;text-decoration:underline;font-weight:800;font-size:.8rem;text-align:left}
+.sr-ukg-relations li span{display:block;margin-top:.2rem;color:#d8e8ed;font-size:.69rem;line-height:1.4}
+.sr-ukg-footer{font-size:.75rem;color:#617a86;line-height:1.55;margin:.8rem 0 0}
+@media(max-width:960px){.sr-ukg-layout{grid-template-columns:minmax(0,1fr)}.sr-ukg-details{min-height:auto}.sr-ukg-canvas{height:455px}}
+@media(max-width:640px){.sr-ukg{padding:.85rem}.sr-ukg-head{flex-direction:column;align-items:stretch}.sr-ukg-export{align-self:flex-start}.sr-ukg-canvas{height:425px}.sr-ukg-node{width:146px}}
+
+/* ACAPS persona-informed reading modes: explanation only, no new scores. */
+.sr-ukg-readers{background:#eaf5f7;border:1px solid #bcd6dd;padding:.82rem .95rem;margin:0 0 1rem}
+.sr-ukg-readers-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.4rem 1rem;align-items:baseline;margin-bottom:.6rem}
+.sr-ukg-readers-head strong{color:#174a5e;font-size:.85rem}
+.sr-ukg-readers-head span{color:#54707e;font-size:.68rem}
+.sr-ukg-lenses{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.55rem}
+.sr-ukg-lenses button{padding:.4rem .7rem;background:#fff;border:1px solid #a9cbd3;color:#15475a;font-size:.75rem;font-weight:700;border-radius:.2rem}
+.sr-ukg-lenses button.active,.sr-ukg-lenses button[aria-pressed="true"]{background:#124f66;color:#fff;border-color:#124f66}
+.sr-ukg-lenses button:focus-visible{outline:3px solid #b87722;outline-offset:2px}
+.sr-ukg-reader-detail{background:#fff;border-left:3px solid #1a9dac;padding:.72rem .85rem;display:grid;gap:.25rem}
+.sr-ukg-reader-detail>div{display:flex;gap:.4rem 1rem;justify-content:space-between;align-items:baseline;flex-wrap:wrap}
+.sr-ukg-reader-detail>div span{font-size:.69rem;color:#567583}
+.sr-ukg-reader-detail>div strong{color:#14465b;font-size:.84rem}
+.sr-ukg-reader-detail p{margin:0;color:#355d6e;font-size:.78rem;line-height:1.55}
+.sr-ukg-reader-detail small{color:#795b2e;font-size:.68rem;line-height:1.5}

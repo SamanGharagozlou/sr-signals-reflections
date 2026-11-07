@@ -25,6 +25,16 @@ function AnalysisPage() {
         <p>Descriptive analytics built from loaded ACAPS Risk Radar records. All denominators, missing fields and permission boundaries remain visible.</p>
         <div className="gt-intel-hero-links"><Link to="/risk-index">Browse the Risk Index →</Link><Link to="/explore">Open Risk Explorer →</Link></div>
       </header>
+      {/* S&R PHASE 15D: UKRAINE REGION ZOOM — synthetic data, historical geometry. */}
+      <section className="sr-p15d-ukraine" aria-labelledby="sr-p15d-ukraine-title">
+        <div>
+          <p className="sr-p15d-eyebrow">ANALYSE / UKRAINE COUNTRY ZOOM</p>
+          <h2 id="sr-p15d-ukraine-title">Ukraine <em>· Which regions move together?</em></h2>
+          <p>Interactive administrative-region map, fictional 26-week time series and correlations. Boundary shapes are geographic reference data; all illustrative index values and thematic patterns are synthetic.</p>
+          <p className="sr-p15d-note">Not an operational forecast or an official ACAPS regional assessment.</p>
+        </div>
+        <Link className="sr-p15d-link sr-p15d-link-dark" to="/ukraine-zoom">Open Ukraine country zoom →</Link>
+      </section>
       {inventory.status==="loading"&&<Loading label="Calculating descriptive inventory statistics…"/>}
       {inventory.status==="error"&&<ErrorState error={inventory.error} onRetry={inventory.refresh}/>}
       {inventory.status==="ok"&&<AnalysisBody data={inventory.data}/>}

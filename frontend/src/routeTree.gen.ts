@@ -21,6 +21,7 @@ import { Route as PublicRouteImport } from './routes/public'
 import { Route as RiskIndexRouteImport } from './routes/risk-index'
 import { Route as SituationRoomRouteImport } from './routes/situation-room'
 import { Route as SpilloversRouteImport } from './routes/spillovers'
+import { Route as UkraineZoomRouteImport } from './routes/ukraine-zoom'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -82,6 +83,11 @@ const SpilloversRoute = SpilloversRouteImport.update({
   path: '/spillovers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UkraineZoomRoute = UkraineZoomRouteImport.update({
+  id: '/ukraine-zoom',
+  path: '/ukraine-zoom',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/risk-index': typeof RiskIndexRoute
   '/situation-room': typeof SituationRoomRoute
   '/spillovers': typeof SpilloversRoute
+  '/ukraine-zoom': typeof UkraineZoomRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/risk-index': typeof RiskIndexRoute
   '/situation-room': typeof SituationRoomRoute
   '/spillovers': typeof SpilloversRoute
+  '/ukraine-zoom': typeof UkraineZoomRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/risk-index': typeof RiskIndexRoute
   '/situation-room': typeof SituationRoomRoute
   '/spillovers': typeof SpilloversRoute
+  '/ukraine-zoom': typeof UkraineZoomRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/risk-index'
     | '/situation-room'
     | '/spillovers'
+    | '/ukraine-zoom'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/risk-index'
     | '/situation-room'
     | '/spillovers'
+    | '/ukraine-zoom'
   id:
     | '__root__'
     | '/'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/risk-index'
     | '/situation-room'
     | '/spillovers'
+    | '/ukraine-zoom'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -184,6 +196,7 @@ export interface RootRouteChildren {
   RiskIndexRoute: typeof RiskIndexRoute
   SituationRoomRoute: typeof SituationRoomRoute
   SpilloversRoute: typeof SpilloversRoute
+  UkraineZoomRoute: typeof UkraineZoomRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -272,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SpilloversRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ukraine-zoom': {
+      id: '/ukraine-zoom'
+      path: '/ukraine-zoom'
+      fullPath: '/ukraine-zoom'
+      preLoaderRoute: typeof UkraineZoomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -288,6 +308,7 @@ const rootRouteChildren: RootRouteChildren = {
   RiskIndexRoute: RiskIndexRoute,
   SituationRoomRoute: SituationRoomRoute,
   SpilloversRoute: SpilloversRoute,
+  UkraineZoomRoute: UkraineZoomRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

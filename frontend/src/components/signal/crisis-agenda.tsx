@@ -6,6 +6,8 @@ import {
   type Crisis, type Expert, type Order, type Region,
 } from "@/lib/crisis-agenda-model";
 
+import { getVerifiedReport } from "@/lib/verified-report-index";
+
 type Panel = "experts" | "update" | "actions";
 type Stage = 0 | 1 | 2 | 3;
 const STAGES = ["You ask", "They answer", "Propose sharing names", "Both agree"];
@@ -60,6 +62,7 @@ export function CrisisAgenda() {
         <div className="sr-15e-reminder">Example figures only. External ACAPS links lead to genuine country analysis, not to a live feed or an automatically verified newest report.</div>
         <div className={grid?"sr-15e-cards is-grid":"sr-15e-cards"}>{visible.map((c,i)=><article key={c.id} className="sr-15e-case">
           <div className="sr-15e-case-summary"><div className="sr-15e-rank"><strong>#{i+1}</strong><small>demo rank</small></div><div className="sr-15e-case-detail"><div className="sr-15e-name">{c.name.toUpperCase()} <small>{c.region}</small>{isUnderCovered(c)&&<span className="sr-15e-under">UNDER-COVERED · DEMO</span>}</div><p>{new Date(`${c.date}T12:00:00`).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})} · {c.title}</p><div className="sr-15e-stats"><span><b>{c.peopleM}M</b> simulated people in need</span><span>Attention: <b>{c.media}</b></span><span>Report age (demo): <b>{c.reportAgeDays}d</b></span><span><b>{c.expertInputs}</b> simulated inputs</span></div><div className="sr-15e-need-bar" aria-label={`${c.peopleM} million simulated people in need`}><span style={{width:`${Math.min(100,100*c.peopleM/30)}%`}}/></div>
+            <VerifiedReportCard crisisId={c.id}/>
             <div className="sr-15e-source"><BookOpen size={13} aria-hidden="true"/><a href={c.sourceUrl ?? "https://www.acaps.org/en/countries"} target="_blank" rel="noopener noreferrer">{c.sourceUrl?`ACAPS ${c.name} country analysis` : "Browse ACAPS country analyses"}</a><small>External · public source</small></div>
           </div><div className="sr-15e-actions"><button type="button" aria-expanded={expanded===c.id&&panel==="experts"} onClick={()=>open(c,"experts")}>Ask experts</button><button type="button" aria-expanded={expanded===c.id&&panel==="update"} onClick={()=>open(c,"update")}>Request an update</button><button type="button" aria-expanded={expanded===c.id&&panel==="actions"} onClick={()=>open(c,"actions")}>Suggested actions</button></div></div>
           {expanded===c.id&&<div className="sr-15e-expanded">
@@ -90,4 +93,16 @@ export function CrisisAgenda() {
       </section>
     </div>
   </main>;
+}
+
+function VerifiedReportCard({crisisId}:{crisisId:string}) {
+  const r = getVerifiedReport(crisisId);
+  if (!r) return null;
+  return <aside className="sr-15f-source-card" aria-label={`Curated ACAPS report reference for ${crisisId}`}>
+    <div className="sr-15f-source-top"><span>ACAPS · public report reference</span><span>Curated, not live</span></div>
+    <a className="sr-15f-source-title" href={r.sourceUrl} target="_blank" rel="noopener noreferrer">{r.title} ↗</a>
+    <p className="sr-15f-source-scope">{r.subject}</p>
+    <div className="sr-15f-source-meta"><span>Published: {r.publishedOn}</span><span>Checked: {r.verifiedOn}</span></div>
+    <p className="sr-15f-note">This is a real ACAPS source reference; it does not validate the fictional scenario above. Not necessarily the newest report.</p>
+  </aside>;
 }

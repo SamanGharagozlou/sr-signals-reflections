@@ -142,16 +142,6 @@ The simplest hackathon path is to use **the provided working frontend for the in
 - **This is not production-grade anonymity**. Real deployment needs threat modeling, safer authentication, data minimization, audited role access, retention controls, small-panel inference protections, consent, and ACAPS review.
 - The historical Risk Radar shows outcomes for past risks; our example Brier scoring is **illustrative**, not claimed validation against real experts.
 
-## Before submission
-
-- [ ] Confirm scope and event definition with an ACAPS representative.
-- [ ] Add official cleaned CSV (139 risks).
-- [ ] Get team agreement on roles, ownership, and submission repo.
-- [ ] Test initial contribution → aggregate → moderator release → feedback → revision → approval.
-- [ ] Record fallback screencast in case of Wi-Fi failure.
-- [ ] Prepare **3-minute pitch** for challenge jury; general participant guide refers to **5 minutes**, so verify format.
-- [ ] Keep this project separate from any other private commercial codebases.
-
 ## Source references
 
 - Organizer repo: https://github.com/Hackathon-for-Good-The-Hague/HFG8-ACAPS-Ground-Truth

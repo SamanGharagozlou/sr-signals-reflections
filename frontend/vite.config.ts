@@ -1,22 +1,34 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - TanStack devtools (dev-only, first), tanstackStart, viteReact, tailwindcss, tsConfigPaths,
-//     nitro (build-only using cloudflare as a default target), VITE_* env injection, @ path alias,
-//     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
-// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
+
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  // Use the Vercel deployment target when building on Vercel.
+  nitro: process.env.VERCEL ? { preset: "vercel" } : true,
+
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
+    // Preserve our existing server entry.
     server: { entry: "server" },
   },
-  // Pre-bundle UI deps up front so Vite doesn't re-optimize mid-session (which loads two React copies).
+
   vite: {
-    server: { proxy: { "/api": { target: "http://127.0.0.1:8765", changeOrigin: true } } },
+    server: {
+      proxy: {
+        "/api": {
+          target: "http://127.0.0.1:8765",
+          changeOrigin: true,
+        },
+      },
+    },
     optimizeDeps: {
-      include: ["sonner", "lucide-react", "@radix-ui/react-alert-dialog", "@radix-ui/react-slot", "class-variance-authority", "clsx", "tailwind-merge"],
+      include: [
+        "sonner",
+        "lucide-react",
+        "@radix-ui/react-alert-dialog",
+        "@radix-ui/react-slot",
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge",
+      ],
     },
   },
 });

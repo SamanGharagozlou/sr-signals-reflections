@@ -535,6 +535,10 @@ def login(body: Login):
     code = body.code.strip().upper()
     with db() as conn:
         if code == "ACAPS-DEMO":
+            if os.environ.get("SIGNAL_PUBLIC_DEMO") == "1":
+                raise HTTPException(
+                    403, "Moderator access disabled in public demo"
+                )
             role, exp = "moderator", None
         else:
             row = conn.execute("SELECT id FROM experts WHERE invite_code=?", (code,)).fetchone()
